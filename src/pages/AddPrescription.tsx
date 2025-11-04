@@ -88,12 +88,23 @@ const AddPrescription = () => {
     setLoading(true);
 
     try {
-      // Insert prescription
+      // Get doctor record from doctors table using user_id
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        throw new Error("Doctor profile not found. Please complete your profile setup.");
+      }
+
+      // Insert prescription with correct doctor_id
       const { data: prescriptionData, error: prescriptionError } = await supabase
         .from('prescriptions')
         .insert({
           patient_id: formData.patientId,
-          doctor_id: user.id,
+          doctor_id: doctorData.id,
           issue_date: formData.startDate,
           valid_until: formData.expiryDate,
           instructions: formData.remarks + (formData.tags ? `\n\nTags: ${formData.tags}` : '')

@@ -114,6 +114,17 @@ const AddLabReport = () => {
     setLoading(true);
 
     try {
+      // Get doctor record from doctors table using user_id
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        throw new Error("Doctor profile not found. Please complete your profile setup.");
+      }
+
       // Upload file with patient_id-based folder structure
       const fileExt = formData.file.name.split('.').pop();
       const timestamp = Date.now();
@@ -127,12 +138,12 @@ const AddLabReport = () => {
 
       if (uploadError) throw uploadError;
 
-      // Insert lab report
+      // Insert lab report with correct doctor_id
       const { error } = await supabase
         .from('lab_reports')
         .insert({
           patient_id: formData.patientId,
-          doctor_id: user.id,
+          doctor_id: doctorData.id,
           date: formData.date,
           report_type: formData.testType,
           remarks: formData.remarks,

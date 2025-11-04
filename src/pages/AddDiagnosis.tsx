@@ -90,6 +90,17 @@ const AddDiagnosis = () => {
     setLoading(true);
 
     try {
+      // Get doctor record from doctors table using user_id
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        throw new Error("Doctor profile not found. Please complete your profile setup.");
+      }
+
       let fileUrl = null;
       let filePath = null;
 
@@ -111,12 +122,12 @@ const AddDiagnosis = () => {
         fileUrl = filePath;
       }
 
-      // Insert diagnosis
+      // Insert diagnosis with correct doctor_id
       const { error } = await supabase
         .from('diagnoses')
         .insert({
           patient_id: formData.patientId,
-          doctor_id: user.id,
+          doctor_id: doctorData.id,
           date: formData.date,
           condition: formData.diagnosis,
           clinical_notes: formData.details,
