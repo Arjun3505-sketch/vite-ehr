@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,37 +6,140 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const AddDiagnosis = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [patients, setPatients] = useState<Array<{ id: string; name: string }>>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     patientId: "",
     date: new Date().toISOString().split('T')[0],
     diagnosis: "",
     details: "",
     severity: "",
-    followUpRequired: false
+    file: null as File | null
   });
 
-  // Mock patients - replace with actual data from Supabase
-  const patients = [
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-    { id: "3", name: "Mike Johnson" }
-  ];
+  useEffect(() => {
+    fetchPatients();
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchPatients = async () => {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('id, name');
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch patients list.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setPatients(data || []);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      const maxSize = 10 * 1024 * 1024;
+
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF, JPG, or PNG file.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 10MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setFormData({...formData, file});
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual diagnosis saving with Supabase
-    console.log("Saving diagnosis:", formData);
-    toast({
-      title: "Diagnosis Added",
-      description: "The diagnosis has been successfully added to the patient's record.",
-    });
-    navigate("/doctor-dashboard");
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to add a diagnosis.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let fileUrl = null;
+
+      // Upload file if exists
+      if (formData.file) {
+        const fileExt = formData.file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `diagnosis/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('medical-files')
+          .upload(filePath, formData.file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('medical-files')
+          .getPublicUrl(filePath);
+
+        fileUrl = publicUrl;
+      }
+
+      // Insert diagnosis
+      const { error } = await supabase
+        .from('diagnoses')
+        .insert({
+          patient_id: formData.patientId,
+          doctor_id: user.id,
+          date: formData.date,
+          diagnosis: formData.diagnosis,
+          details: formData.details,
+          severity: formData.severity,
+          file_url: fileUrl
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Diagnosis Added",
+        description: "The diagnosis has been successfully added to the patient's record.",
+      });
+      navigate("/doctor-dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save diagnosis.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -122,10 +225,49 @@ const AddDiagnosis = () => {
                 />
               </div>
 
+              {/* File Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="file">Upload Supporting Document (Optional)</Label>
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+                  <div className="text-center">
+                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <div className="space-y-2">
+                      <Label htmlFor="file-upload" className="cursor-pointer">
+                        <span className="text-sm font-medium text-primary hover:text-primary/80">
+                          Click to upload
+                        </span>
+                        <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        PDF, PNG, JPG up to 10MB
+                      </p>
+                    </div>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                  {formData.file && (
+                    <div className="mt-4 p-3 bg-muted rounded-md">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        <span className="text-sm font-medium">{formData.file.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1">
+                <Button type="submit" className="flex-1" disabled={loading}>
                   <Save className="w-4 h-4 mr-2" />
-                  Save Diagnosis
+                  {loading ? "Saving..." : "Save Diagnosis"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate("/doctor-dashboard")}>
                   Cancel

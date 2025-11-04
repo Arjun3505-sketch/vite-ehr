@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Medication {
   name: string;
@@ -20,6 +22,9 @@ interface Medication {
 const AddPrescription = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [patients, setPatients] = useState<Array<{ id: string; name: string }>>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     patientId: "",
     startDate: new Date().toISOString().split('T')[0],
@@ -32,12 +37,26 @@ const AddPrescription = () => {
     { name: "", dosage: "", frequency: "", duration: "", instructions: "" }
   ]);
 
-  // Mock patients - replace with actual data from Supabase
-  const patients = [
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-    { id: "3", name: "Mike Johnson" }
-  ];
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const fetchPatients = async () => {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('id, name');
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch patients list.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setPatients(data || []);
+  };
 
   const addMedication = () => {
     setMedications([...medications, { name: "", dosage: "", frequency: "", duration: "", instructions: "" }]);
@@ -54,15 +73,51 @@ const AddPrescription = () => {
     setMedications(updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual prescription saving with Supabase
-    console.log("Saving prescription:", { formData, medications });
-    toast({
-      title: "Prescription Created",
-      description: "The prescription has been successfully created and saved.",
-    });
-    navigate("/doctor-dashboard");
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a prescription.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Insert prescription
+      const { data: prescriptionData, error: prescriptionError } = await supabase
+        .from('prescriptions')
+        .insert({
+          patient_id: formData.patientId,
+          doctor_id: user.id,
+          issue_date: formData.startDate,
+          valid_until: formData.expiryDate,
+          instructions: formData.remarks + (formData.tags ? `\n\nTags: ${formData.tags}` : ''),
+          medications: medications as any
+        })
+        .select()
+        .single();
+
+      if (prescriptionError) throw prescriptionError;
+
+      toast({
+        title: "Prescription Created",
+        description: "The prescription has been successfully created and saved.",
+      });
+      navigate("/doctor-dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save prescription.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -234,9 +289,9 @@ const AddPrescription = () => {
                 ))}
 
                 <div className="flex gap-4 pt-6">
-                  <Button type="submit" className="flex-1">
+                  <Button type="submit" className="flex-1" disabled={loading}>
                     <Save className="w-4 h-4 mr-2" />
-                    Save Prescription
+                    {loading ? "Saving..." : "Save Prescription"}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => navigate("/doctor-dashboard")}>
                     Cancel

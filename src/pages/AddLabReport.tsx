@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const AddLabReport = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [patients, setPatients] = useState<Array<{ id: string; name: string }>>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     patientId: "",
     date: new Date().toISOString().split('T')[0],
@@ -21,12 +26,26 @@ const AddLabReport = () => {
     file: null as File | null
   });
 
-  // Mock patients - replace with actual data from Supabase
-  const patients = [
-    { id: "1", name: "John Doe" },
-    { id: "2", name: "Jane Smith" },
-    { id: "3", name: "Mike Johnson" }
-  ];
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const fetchPatients = async () => {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('id, name');
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch patients list.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setPatients(data || []);
+  };
 
   const testTypes = [
     "Blood Test - CBC",
@@ -71,15 +90,74 @@ const AddLabReport = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual file upload to Supabase Storage and save metadata
-    console.log("Saving lab report:", formData);
-    toast({
-      title: "Lab Report Added",
-      description: "The lab report has been successfully uploaded and saved.",
-    });
-    navigate("/doctor-dashboard");
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to add a lab report.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.file) {
+      toast({
+        title: "Error",
+        description: "Please upload a lab report file.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Upload file
+      const fileExt = formData.file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `lab-reports/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('medical-files')
+        .upload(filePath, formData.file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('medical-files')
+        .getPublicUrl(filePath);
+
+      // Insert lab report
+      const { error } = await supabase
+        .from('lab_reports')
+        .insert({
+          patient_id: formData.patientId,
+          doctor_id: user.id,
+          date: formData.date,
+          report_type: formData.testType,
+          remarks: formData.remarks,
+          tags: formData.tags,
+          file_path: filePath
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Lab Report Added",
+        description: "The lab report has been successfully uploaded and saved.",
+      });
+      navigate("/doctor-dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload lab report.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -206,9 +284,9 @@ const AddLabReport = () => {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1">
+                <Button type="submit" className="flex-1" disabled={loading}>
                   <Upload className="w-4 h-4 mr-2" />
-                  Upload & Save Report
+                  {loading ? "Uploading..." : "Upload & Save Report"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate("/doctor-dashboard")}>
                   Cancel
