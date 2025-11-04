@@ -91,6 +91,7 @@ const AddDiagnosis = () => {
 
     try {
       let fileUrl = null;
+      let filePath = null;
 
       // Upload file if exists
       if (formData.file) {
@@ -99,7 +100,7 @@ const AddDiagnosis = () => {
         const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const fileName = `${timestamp}_${sanitizedFileName}`;
         // Use patient_id-based folder structure
-        const filePath = `diagnoses/${formData.patientId}/${fileName}`;
+        filePath = `diagnoses/${formData.patientId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('medical-files')
@@ -107,11 +108,7 @@ const AddDiagnosis = () => {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('medical-files')
-          .getPublicUrl(filePath);
-
-        fileUrl = publicUrl;
+        fileUrl = filePath;
       }
 
       // Insert diagnosis
@@ -121,8 +118,8 @@ const AddDiagnosis = () => {
           patient_id: formData.patientId,
           doctor_id: user.id,
           date: formData.date,
-          diagnosis: formData.diagnosis,
-          details: formData.details,
+          condition: formData.diagnosis,
+          clinical_notes: formData.details,
           severity: formData.severity,
           file_url: fileUrl
         });

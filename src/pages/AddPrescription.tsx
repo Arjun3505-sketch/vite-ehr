@@ -96,13 +96,28 @@ const AddPrescription = () => {
           doctor_id: user.id,
           issue_date: formData.startDate,
           valid_until: formData.expiryDate,
-          instructions: formData.remarks + (formData.tags ? `\n\nTags: ${formData.tags}` : ''),
-          medications: medications as any
+          instructions: formData.remarks + (formData.tags ? `\n\nTags: ${formData.tags}` : '')
         })
         .select()
         .single();
 
       if (prescriptionError) throw prescriptionError;
+
+      // Insert prescription items
+      const prescriptionItems = medications.map(med => ({
+        prescription_id: prescriptionData.id,
+        medication: med.name,
+        dosage: med.dosage,
+        frequency: med.frequency,
+        duration_days: parseInt(med.duration) || null,
+        instructions: med.instructions
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('prescription_items')
+        .insert(prescriptionItems);
+
+      if (itemsError) throw itemsError;
 
       toast({
         title: "Prescription Created",

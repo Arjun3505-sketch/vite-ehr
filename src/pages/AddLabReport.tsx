@@ -127,10 +127,6 @@ const AddLabReport = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('medical-files')
-        .getPublicUrl(filePath);
-
       // Insert lab report
       const { error } = await supabase
         .from('lab_reports')
@@ -140,9 +136,9 @@ const AddLabReport = () => {
           date: formData.date,
           report_type: formData.testType,
           remarks: formData.remarks,
-          tags: formData.tags,
+          tags: formData.tags ? { tags: formData.tags.split(',').map(t => t.trim()) } : null,
           file_path: filePath,
-          file_url: publicUrl
+          file_url: filePath
         });
 
       if (error) throw error;
