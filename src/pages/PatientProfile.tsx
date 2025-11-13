@@ -7,7 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, User, Settings, Shield, Bell, FileText, Eye, Save } from "lucide-react";
+import { ArrowLeft, User, Settings, Shield, FileText, Save } from "lucide-react";
+import Diagnoses from "@/components/data/Diagnoses";
+import LabReports from "@/components/data/LabReports";
+import Prescriptions from "@/components/data/Prescriptions";
+import Surgeries from "@/components/data/Surgeries";
+import MedicalHistory from "@/components/data/MedicalHistory";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,7 +147,7 @@ const PatientProfile = () => {
       </div>
 
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="personal" className="flex items-center gap-2">
             <User className="w-4 h-4" />
             Personal
@@ -154,10 +159,6 @@ const PatientProfile = () => {
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
             Privacy
-          </TabsTrigger>
-          <TabsTrigger value="app" className="flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            App Settings
           </TabsTrigger>
           <TabsTrigger value="records" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
@@ -417,94 +418,37 @@ const PatientProfile = () => {
           </Card>
         </TabsContent>
 
-        {/* App Settings */}
-        <TabsContent value="app" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>App Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Display Preferences</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Dark Mode</Label>
-                    <Switch />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Language</Label>
-                    <select className="w-full p-2 border rounded-md">
-                      <option>English</option>
-                      <option>Spanish</option>
-                      <option>French</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Data Sync</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Auto-sync Health Data</Label>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label>Offline Mode</Label>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Health Records */}
         <TabsContent value="records" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>View All Health Records</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Access your complete electronic health record with detailed medical history.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-24 flex flex-col gap-2">
-                  <FileText className="w-6 h-6" />
-                  <span>Medical History</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2">
-                  <FileText className="w-6 h-6" />
-                  <span>Lab Reports</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2">
-                  <FileText className="w-6 h-6" />
-                  <span>Prescriptions</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2">
-                  <FileText className="w-6 h-6" />
-                  <span>Vaccinations</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2">
-                  <FileText className="w-6 h-6" />
-                  <span>Surgery Records</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2">
-                  <Eye className="w-6 h-6" />
-                  <span>Full EHR View</span>
-                </Button>
-              </div>
+          <Tabs defaultValue="diagnoses" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="diagnoses">Diagnoses</TabsTrigger>
+              <TabsTrigger value="lab-reports">Lab Reports</TabsTrigger>
+              <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
+              <TabsTrigger value="surgeries">Surgeries</TabsTrigger>
+              <TabsTrigger value="medical-history">Medical History</TabsTrigger>
+            </TabsList>
 
-              <Button className="w-full" onClick={() => navigate("/patient-ehr")}>
-                <Eye className="w-4 h-4 mr-2" />
-                View Complete Health Record
-              </Button>
-            </CardContent>
-          </Card>
+            <TabsContent value="diagnoses" className="mt-6">
+              <Diagnoses />
+            </TabsContent>
+
+            <TabsContent value="lab-reports" className="mt-6">
+              <LabReports />
+            </TabsContent>
+
+            <TabsContent value="prescriptions" className="mt-6">
+              <Prescriptions />
+            </TabsContent>
+
+            <TabsContent value="surgeries" className="mt-6">
+              <Surgeries />
+            </TabsContent>
+
+            <TabsContent value="medical-history" className="mt-6">
+              <MedicalHistory />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>
