@@ -15,7 +15,6 @@ const AddSurgery = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [patients, setPatients] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     patientId: "",
@@ -27,27 +26,6 @@ const AddSurgery = () => {
     remarks: "",
     file: null as File | null
   });
-
-  useEffect(() => {
-    fetchPatients();
-  }, []);
-
-  const fetchPatients = async () => {
-    const { data, error } = await supabase
-      .from('patients')
-      .select('id, name');
-    
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch patients list.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setPatients(data || []);
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,22 +169,14 @@ const AddSurgery = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Patient Selection */}
               <div className="space-y-2">
-                <Label htmlFor="patient">Patient *</Label>
-                <Select 
-                  value={formData.patientId} 
-                  onValueChange={(value) => setFormData({...formData, patientId: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a patient" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {patients.map((patient) => (
-                      <SelectItem key={patient.id} value={patient.id}>
-                        {patient.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="patientId">Patient ID *</Label>
+                <Input
+                  id="patientId"
+                  placeholder="Enter patient ID"
+                  value={formData.patientId}
+                  onChange={(e) => setFormData({...formData, patientId: e.target.value})}
+                  required
+                />
               </div>
 
               {/* Date */}
