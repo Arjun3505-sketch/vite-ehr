@@ -28,12 +28,26 @@ const MedicalHistory = () => {
 
   const fetchMedicalHistory = async () => {
     try {
-      // Fetch all medical records in parallel
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Get patient record for current user
+      const { data: patientData, error: patientError } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (patientError) throw patientError;
+      if (!patientData) throw new Error('Patient profile not found');
+
+      // Fetch all medical records for this patient in parallel
       const [diagnosesRes, labReportsRes, prescriptionsRes, surgeriesRes, doctorsRes] = await Promise.all([
-        supabase.from('diagnoses').select('*').order('date', { ascending: false }),
-        supabase.from('lab_reports').select('*').order('date', { ascending: false }),
-        supabase.from('prescriptions').select('*').order('issue_date', { ascending: false }),
-        supabase.from('surgeries').select('*').order('date', { ascending: false }),
+        supabase.from('diagnoses').select('*').eq('patient_id', patientData.id).order('date', { ascending: false }),
+        supabase.from('lab_reports').select('*').eq('patient_id', patientData.id).order('date', { ascending: false }),
+        supabase.from('prescriptions').select('*').eq('patient_id', patientData.id).order('issue_date', { ascending: false }),
+        supabase.from('surgeries').select('*').eq('patient_id', patientData.id).order('date', { ascending: false }),
         supabase.from('doctors').select('id, name'),
       ]);
 
