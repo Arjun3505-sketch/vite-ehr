@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Stethoscope, Calendar, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Stethoscope, Calendar, AlertTriangle, CheckCircle, Clock, Download, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +17,9 @@ interface Diagnosis {
   severity: string | null;
   status: string | null;
   clinical_notes: string | null;
+  file_url: string | null;
   created_at: string;
+  doctor_name?: string;
 }
 
 const Diagnoses = () => {
@@ -30,13 +33,28 @@ const Diagnoses = () => {
 
   const fetchDiagnoses = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: diagnosesData, error } = await supabase
         .from('diagnoses')
         .select('*')
         .order('date', { ascending: false });
 
       if (error) throw error;
-      setDiagnoses(data || []);
+
+      // Fetch doctor names separately
+      const doctorIds = [...new Set(diagnosesData?.map(d => d.doctor_id) || [])];
+      const { data: doctorsData } = await supabase
+        .from('doctors')
+        .select('id, name')
+        .in('id', doctorIds);
+
+      const doctorMap = new Map(doctorsData?.map(d => [d.id, d.name]) || []);
+      
+      const diagnosesWithDoctorNames = diagnosesData?.map(d => ({
+        ...d,
+        doctor_name: doctorMap.get(d.doctor_id) || 'Unknown Doctor'
+      })) || [];
+      
+      setDiagnoses(diagnosesWithDoctorNames);
     } catch (error) {
       console.error('Error fetching diagnoses:', error);
       toast({
@@ -46,6 +64,46 @@ const Diagnoses = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async (fileUrl: string | null, condition: string) => {
+    if (!fileUrl) {
+      toast({
+        title: "No File",
+        description: "This diagnosis doesn't have an attached file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('medical-files')
+        .download(fileUrl);
+
+      if (error) throw error;
+
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `diagnosis_${condition}_${new Date().getTime()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Success",
+        description: "File downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
     }
   };
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pill, Calendar, Clock, AlertCircle } from "lucide-react";
+import { Pill, Calendar, Clock, AlertCircle, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -14,6 +14,7 @@ interface Prescription {
   valid_until: string | null;
   instructions: string | null;
   created_at: string;
+  doctor_name?: string;
 }
 
 const Prescriptions = () => {
@@ -27,13 +28,28 @@ const Prescriptions = () => {
 
   const fetchPrescriptions = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: prescriptionsData, error } = await supabase
         .from('prescriptions')
         .select('*')
         .order('issue_date', { ascending: false });
 
       if (error) throw error;
-      setPrescriptions(data || []);
+
+      // Fetch doctor names separately
+      const doctorIds = [...new Set(prescriptionsData?.map(p => p.doctor_id) || [])];
+      const { data: doctorsData } = await supabase
+        .from('doctors')
+        .select('id, name')
+        .in('id', doctorIds);
+
+      const doctorMap = new Map(doctorsData?.map(d => [d.id, d.name]) || []);
+      
+      const prescriptionsWithDoctorNames = prescriptionsData?.map(p => ({
+        ...p,
+        doctor_name: doctorMap.get(p.doctor_id) || 'Unknown Doctor'
+      })) || [];
+      
+      setPrescriptions(prescriptionsWithDoctorNames);
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
       toast({

@@ -30,13 +30,28 @@ const LabReports = () => {
 
   const fetchLabReports = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: reportsData, error } = await supabase
         .from('lab_reports')
         .select('*')
         .order('date', { ascending: false });
 
       if (error) throw error;
-      setReports(data || []);
+
+      // Fetch doctor names separately
+      const doctorIds = [...new Set(reportsData?.map(r => r.doctor_id) || [])];
+      const { data: doctorsData } = await supabase
+        .from('doctors')
+        .select('id, name')
+        .in('id', doctorIds);
+
+      const doctorMap = new Map(doctorsData?.map(d => [d.id, d.name]) || []);
+      
+      const reportsWithDoctorNames = reportsData?.map(r => ({
+        ...r,
+        doctor_name: doctorMap.get(r.doctor_id) || 'Unknown Doctor'
+      })) || [];
+      
+      setReports(reportsWithDoctorNames);
     } catch (error) {
       console.error('Error fetching lab reports:', error);
       toast({
