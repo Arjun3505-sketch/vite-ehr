@@ -30,9 +30,25 @@ const LabReports = () => {
 
   const fetchLabReports = async () => {
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Get patient record for current user
+      const { data: patientData, error: patientError } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (patientError) throw patientError;
+      if (!patientData) throw new Error('Patient profile not found');
+
+      // Fetch lab reports for this patient
       const { data: reportsData, error } = await supabase
         .from('lab_reports')
         .select('*')
+        .eq('patient_id', patientData.id)
         .order('date', { ascending: false });
 
       if (error) throw error;
