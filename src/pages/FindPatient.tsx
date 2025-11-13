@@ -3,40 +3,74 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, ArrowLeft } from "lucide-react";
+import { Search, User, ArrowLeft, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import MedicalHistory from "@/components/data/MedicalHistory";
 
 const FindPatient = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const { toast } = useToast();
+  const [patientId, setPatientId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [patientData, setPatientData] = useState<any>(null);
 
-  // Mock patient data - replace with actual Supabase query
-  const mockPatients = [
-    { id: 1, name: "John Doe", email: "john.doe@email.com", age: 35, bloodGroup: "A+", lastVisit: "2024-01-05" },
-    { id: 2, name: "Jane Smith", email: "jane.smith@email.com", age: 28, bloodGroup: "O-", lastVisit: "2024-01-04" },
-    { id: 3, name: "Mike Johnson", email: "mike.johnson@email.com", age: 42, bloodGroup: "B+", lastVisit: "2024-01-03" },
-    { id: 4, name: "Alice Brown", email: "alice.brown@email.com", age: 31, bloodGroup: "AB+", lastVisit: "2024-01-02" },
-  ];
-
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
+  const handleSearch = async () => {
+    if (!patientId.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a patient ID",
+        variant: "destructive"
+      });
       return;
     }
 
-    // TODO: Replace with actual Supabase search
-    const filtered = mockPatients.filter(patient =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.id.toString().includes(searchTerm)
-    );
+    setLoading(true);
     
-    setSearchResults(filtered);
+    try {
+      const { data: patient, error } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('id', patientId.trim())
+        .single();
+
+      if (error) throw error;
+
+      if (!patient) {
+        toast({
+          title: "Not Found",
+          description: "No patient found with this ID",
+          variant: "destructive"
+        });
+        setPatientData(null);
+        return;
+      }
+
+      setPatientData(patient);
+      toast({
+        title: "Success",
+        description: "Patient found successfully"
+      });
+    } catch (error: any) {
+      console.error('Error searching patient:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to search for patient",
+        variant: "destructive"
+      });
+      setPatientData(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePatientClick = (patientId: number) => {
-    navigate(`/patient/${patientId}`);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -64,65 +98,86 @@ const FindPatient = () => {
         <CardContent>
           <div className="flex gap-2">
             <Input
-              placeholder="Enter patient name, email, or ID"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Enter patient ID"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="flex-1"
             />
-            <Button onClick={handleSearch}>
+            <Button onClick={handleSearch} disabled={loading}>
               <Search className="w-4 h-4 mr-2" />
-              Search
+              {loading ? "Searching..." : "Search"}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Search Results */}
-      {searchResults.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Search Results ({searchResults.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {searchResults.map((patient) => (
-                <div 
-                  key={patient.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                  onClick={() => handlePatientClick(patient.id)}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{patient.name}</h3>
-                      <p className="text-sm text-muted-foreground">{patient.email}</p>
-                      <div className="flex gap-2 mt-1">
-                        <Badge variant="outline">ID: {patient.id}</Badge>
-                        <Badge variant="outline">Age: {patient.age}</Badge>
-                        <Badge variant="outline">{patient.bloodGroup}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Last Visit</p>
-                    <p className="font-medium">{patient.lastVisit}</p>
-                  </div>
+      {/* Patient Details */}
+      {patientData && (
+        <div className="space-y-6">
+          {/* Personal Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Patient Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-muted-foreground">Full Name</p>
+                  <p className="font-medium">{patientData.name}</p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <div>
+                  <p className="text-sm text-muted-foreground">Patient ID</p>
+                  <p className="font-medium font-mono">{patientData.id}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium">{patientData.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium">{patientData.phone || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Date of Birth</p>
+                  <p className="font-medium">{patientData.dob ? formatDate(patientData.dob) : 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Blood Group</p>
+                  <Badge variant="outline">{patientData.blood_group || 'N/A'}</Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Gender</p>
+                  <p className="font-medium">{patientData.gender || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Registered</p>
+                  <p className="font-medium">{formatDate(patientData.created_at)}</p>
+                </div>
+                {patientData.address && (
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-muted-foreground">Address</p>
+                    <p className="font-medium">{patientData.address}</p>
+                  </div>
+                )}
+                {patientData.emergency_contact && (
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-muted-foreground">Emergency Contact</p>
+                    <p className="font-medium">
+                      {patientData.emergency_contact.name} - {patientData.emergency_contact.phone}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-      {searchTerm && searchResults.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">No patients found matching "{searchTerm}"</p>
-          </CardContent>
-        </Card>
+          {/* Medical History */}
+          <MedicalHistory patientId={patientData.id} />
+        </div>
       )}
     </div>
   );

@@ -127,7 +127,7 @@ const DoctorDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <Button 
           className="h-20 flex flex-col gap-2" 
           onClick={() => navigate("/find-patient")}
@@ -155,6 +155,13 @@ const DoctorDashboard = () => {
         >
           <Stethoscope className="w-6 h-6" />
           Add Lab Report
+        </Button>
+        <Button 
+          className="h-20 flex flex-col gap-2" 
+          onClick={() => navigate("/add-surgery")}
+        >
+          <Plus className="w-6 h-6" />
+          Add Surgery
         </Button>
       </div>
 

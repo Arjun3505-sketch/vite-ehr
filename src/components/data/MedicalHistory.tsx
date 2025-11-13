@@ -17,37 +17,46 @@ interface MedicalRecord {
   file_url?: string | null;
 }
 
-const MedicalHistory = () => {
+interface MedicalHistoryProps {
+  patientId?: string;
+}
+
+const MedicalHistory = ({ patientId }: MedicalHistoryProps = {}) => {
   const [records, setRecords] = useState<MedicalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchMedicalHistory();
-  }, []);
+  }, [patientId]);
 
   const fetchMedicalHistory = async () => {
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      let targetPatientId = patientId;
 
-      // Get patient record for current user
-      const { data: patientData, error: patientError } = await supabase
-        .from('patients')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      // If no patientId prop provided, get it from current user
+      if (!targetPatientId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
 
-      if (patientError) throw patientError;
-      if (!patientData) throw new Error('Patient profile not found');
+        const { data: patientData, error: patientError } = await supabase
+          .from('patients')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (patientError) throw patientError;
+        if (!patientData) throw new Error('Patient profile not found');
+
+        targetPatientId = patientData.id;
+      }
 
       // Fetch all medical records for this patient in parallel
       const [diagnosesRes, labReportsRes, prescriptionsRes, surgeriesRes, doctorsRes] = await Promise.all([
-        supabase.from('diagnoses').select('*').eq('patient_id', patientData.id).order('date', { ascending: false }),
-        supabase.from('lab_reports').select('*').eq('patient_id', patientData.id).order('date', { ascending: false }),
-        supabase.from('prescriptions').select('*').eq('patient_id', patientData.id).order('issue_date', { ascending: false }),
-        supabase.from('surgeries').select('*').eq('patient_id', patientData.id).order('date', { ascending: false }),
+        supabase.from('diagnoses').select('*').eq('patient_id', targetPatientId).order('date', { ascending: false }),
+        supabase.from('lab_reports').select('*').eq('patient_id', targetPatientId).order('date', { ascending: false }),
+        supabase.from('prescriptions').select('*').eq('patient_id', targetPatientId).order('issue_date', { ascending: false }),
+        supabase.from('surgeries').select('*').eq('patient_id', targetPatientId).order('date', { ascending: false }),
         supabase.from('doctors').select('id, name'),
       ]);
 
