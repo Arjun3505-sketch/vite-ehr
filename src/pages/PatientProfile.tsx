@@ -24,6 +24,7 @@ const PatientProfile = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
 
+  const [patientId, setPatientId] = useState("");
   const [personalInfo, setPersonalInfo] = useState({
     firstName: "",
     lastName: "",
@@ -58,6 +59,7 @@ const PatientProfile = () => {
       }
 
       if (patient) {
+        setPatientId(patient.id);
         const nameParts = patient.name?.split(' ') || ['', ''];
         const emergencyContact = patient.emergency_contact as { name?: string; phone?: string } | null;
         setPersonalInfo({
@@ -224,6 +226,15 @@ const PatientProfile = () => {
                     onChange={(e) => setPersonalInfo({...personalInfo, bloodGroup: e.target.value})}
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="patientId">Patient ID</Label>
+                <Input
+                  id="patientId"
+                  value={patientId}
+                  disabled
+                  className="bg-muted"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>

@@ -1,0 +1,334 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Save, Upload, Scissors } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+const AddSurgery = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [patients, setPatients] = useState<Array<{ id: string; name: string }>>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    patientId: "",
+    date: new Date().toISOString().split('T')[0],
+    procedure: "",
+    outcome: "",
+    complications: "",
+    icdPcsCode: "",
+    remarks: "",
+    file: null as File | null
+  });
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const fetchPatients = async () => {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('id, name');
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch patients list.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setPatients(data || []);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      const maxSize = 10 * 1024 * 1024;
+
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF, JPG, or PNG file.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 10MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setFormData({...formData, file});
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to add a surgery.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.patientId || !formData.procedure || !formData.outcome) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Get doctor record from doctors table using user_id
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        throw new Error("Doctor profile not found. Please complete your profile setup.");
+      }
+
+      let fileUrl = null;
+
+      // Upload file if exists
+      if (formData.file) {
+        const timestamp = Date.now();
+        const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${timestamp}_${sanitizedFileName}`;
+        const filePath = `surgeries/${formData.patientId}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('medical-files')
+          .upload(filePath, formData.file);
+
+        if (uploadError) throw uploadError;
+
+        fileUrl = filePath;
+      }
+
+      // Insert surgery with correct doctor_id (surgeon_id)
+      const { error } = await supabase
+        .from('surgeries')
+        .insert({
+          patient_id: formData.patientId,
+          surgeon_id: doctorData.id,
+          date: formData.date,
+          procedure: formData.procedure,
+          outcome: formData.outcome,
+          complications: formData.complications || null,
+          icd_pcs_code: formData.icdPcsCode || null,
+          remarks: formData.remarks || null
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Surgery record added successfully.",
+      });
+
+      navigate("/doctor-dashboard");
+    } catch (error: any) {
+      console.error('Error adding surgery:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add surgery record.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" onClick={() => navigate("/doctor-dashboard")}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Add Surgery Record</h1>
+            <p className="text-muted-foreground">Record a new surgical procedure</p>
+          </div>
+        </div>
+
+        {/* Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Scissors className="w-5 h-5" />
+              Surgery Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Patient Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="patient">Patient *</Label>
+                <Select 
+                  value={formData.patientId} 
+                  onValueChange={(value) => setFormData({...formData, patientId: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a patient" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {patients.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        {patient.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date */}
+              <div className="space-y-2">
+                <Label htmlFor="date">Surgery Date *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({...formData, date: e.target.value})}
+                  required
+                />
+              </div>
+
+              {/* Procedure */}
+              <div className="space-y-2">
+                <Label htmlFor="procedure">Procedure *</Label>
+                <Input
+                  id="procedure"
+                  placeholder="e.g., Appendectomy, Coronary Artery Bypass"
+                  value={formData.procedure}
+                  onChange={(e) => setFormData({...formData, procedure: e.target.value})}
+                  required
+                />
+              </div>
+
+              {/* Outcome */}
+              <div className="space-y-2">
+                <Label htmlFor="outcome">Outcome *</Label>
+                <Select 
+                  value={formData.outcome} 
+                  onValueChange={(value) => setFormData({...formData, outcome: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select outcome" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Successful">Successful</SelectItem>
+                    <SelectItem value="Complicated">Complicated</SelectItem>
+                    <SelectItem value="Failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Complications */}
+              <div className="space-y-2">
+                <Label htmlFor="complications">Complications</Label>
+                <Textarea
+                  id="complications"
+                  placeholder="Describe any complications that occurred during or after surgery"
+                  value={formData.complications}
+                  onChange={(e) => setFormData({...formData, complications: e.target.value})}
+                  rows={3}
+                />
+              </div>
+
+              {/* ICD-PCS Code */}
+              <div className="space-y-2">
+                <Label htmlFor="icdPcsCode">ICD-PCS Code</Label>
+                <Input
+                  id="icdPcsCode"
+                  placeholder="e.g., 0DTJ4ZZ"
+                  value={formData.icdPcsCode}
+                  onChange={(e) => setFormData({...formData, icdPcsCode: e.target.value})}
+                />
+              </div>
+
+              {/* Remarks */}
+              <div className="space-y-2">
+                <Label htmlFor="remarks">Remarks</Label>
+                <Textarea
+                  id="remarks"
+                  placeholder="Additional notes about the surgery"
+                  value={formData.remarks}
+                  onChange={(e) => setFormData({...formData, remarks: e.target.value})}
+                  rows={4}
+                />
+              </div>
+
+              {/* File Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="file">Attach File (Optional)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="file"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="flex-1"
+                  />
+                  <Upload className="w-5 h-5 text-muted-foreground" />
+                </div>
+                {formData.file && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {formData.file.name}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Supported formats: PDF, JPG, PNG (Max 10MB)
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex gap-2 pt-4">
+                <Button type="submit" disabled={loading} className="flex-1">
+                  <Save className="w-4 h-4 mr-2" />
+                  {loading ? "Adding Surgery..." : "Add Surgery Record"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate("/doctor-dashboard")}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default AddSurgery;

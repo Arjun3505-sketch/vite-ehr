@@ -15,6 +15,7 @@ import FindPatient from "./pages/FindPatient";
 import AddDiagnosis from "./pages/AddDiagnosis";
 import AddPrescription from "./pages/AddPrescription";
 import AddLabReport from "./pages/AddLabReport";
+import AddSurgery from "./pages/AddSurgery";
 import PatientProfileSetup from "./pages/PatientProfileSetup";
 import DoctorProfileSetup from "./pages/DoctorProfileSetup";
 import NotFound from "./pages/NotFound";
@@ -108,6 +109,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRole="doctor">
                   <AddLabReport />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/add-surgery" 
+              element={
+                <ProtectedRoute allowedRole="doctor">
+                  <AddSurgery />
                 </ProtectedRoute>
               } 
             />
