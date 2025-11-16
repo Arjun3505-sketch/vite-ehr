@@ -1,23 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, User, ArrowLeft, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import MedicalHistory from "@/components/data/MedicalHistory";
 
 const FindPatient = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [patientId, setPatientId] = useState("");
   const [loading, setLoading] = useState(false);
   const [patientData, setPatientData] = useState<any>(null);
 
-  const handleSearch = async () => {
-    if (!patientId.trim()) {
+  useEffect(() => {
+    // Check if patient ID was passed via navigation state
+    if (location.state?.patientId) {
+      setPatientId(location.state.patientId);
+      handleSearch(location.state.patientId);
+    }
+  }, [location.state]);
+
+  const handleSearch = async (searchId?: string) => {
+    const idToSearch = searchId || patientId;
+    if (!idToSearch.trim()) {
       toast({
         title: "Error",
         description: "Please enter a patient ID",
@@ -32,7 +42,7 @@ const FindPatient = () => {
       const { data: patient, error } = await supabase
         .from('patients')
         .select('*')
-        .eq('id', patientId.trim())
+        .eq('id', idToSearch.trim())
         .single();
 
       if (error) throw error;
@@ -104,7 +114,7 @@ const FindPatient = () => {
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="flex-1"
             />
-            <Button onClick={handleSearch} disabled={loading}>
+            <Button onClick={() => handleSearch()} disabled={loading}>
               <Search className="w-4 h-4 mr-2" />
               {loading ? "Searching..." : "Search"}
             </Button>
