@@ -214,9 +214,9 @@ const AddSurgery = () => {
                     <SelectValue placeholder="Select outcome" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Successful">Successful</SelectItem>
-                    <SelectItem value="Complicated">Complicated</SelectItem>
-                    <SelectItem value="Failed">Failed</SelectItem>
+                    <SelectItem value="successful">Successful</SelectItem>
+                    <SelectItem value="complication">Complication</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

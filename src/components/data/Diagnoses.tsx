@@ -225,6 +225,7 @@ const Diagnoses = () => {
                   <TableHead>Severity</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Clinical Notes</TableHead>
+                  <TableHead>File</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -258,6 +259,20 @@ const Diagnoses = () => {
                       <div className="max-w-xs truncate text-sm">
                         {diagnosis.clinical_notes || "No notes"}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {diagnosis.file_url ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(diagnosis.file_url, diagnosis.condition)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">No file</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

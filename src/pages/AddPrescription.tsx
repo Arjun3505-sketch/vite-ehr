@@ -99,7 +99,7 @@ const AddPrescription = () => {
         dosage: med.dosage,
         frequency: med.frequency,
         duration_days: parseInt(med.duration) || null,
-        instructions: med.instructions
+        quantity: null
       }));
 
       const { error: itemsError } = await supabase
