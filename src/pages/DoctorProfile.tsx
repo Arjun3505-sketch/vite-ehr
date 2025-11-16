@@ -164,12 +164,100 @@ const DoctorProfile = () => {
     }
   };
 
-  const handleSave = (section: string) => {
-    // TODO: Implement actual save to Supabase
-    toast({
-      title: "Settings Saved",
-      description: `${section} settings have been updated successfully.`,
-    });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  const handleSaveProfessionalInfo = async () => {
+    try {
+      if (!user) return;
+
+      const { data: doctor, error: fetchError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const { error } = await supabase
+        .from('doctors')
+        .update({
+          name: doctorInfo.name,
+          email: doctorInfo.email,
+          phone: doctorInfo.phone,
+          specialization: doctorInfo.specialization,
+          license_number: doctorInfo.licenseNumber,
+        })
+        .eq('id', doctor.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile Updated",
+        description: "Your professional information has been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating doctor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      if (!passwordData.newPassword || !passwordData.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Please fill in all password fields",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "New passwords do not match",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (passwordData.newPassword.length < 6) {
+        toast({
+          title: "Error",
+          description: "Password must be at least 6 characters",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password Updated",
+        description: "Your password has been changed successfully.",
+      });
+
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -184,10 +272,9 @@ const DoctorProfile = () => {
         </div>
 
         <Tabs defaultValue="professional" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="professional">Professional</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="practice">Practice</TabsTrigger>
             <TabsTrigger value="patients">Patients</TabsTrigger>
           </TabsList>
 
@@ -285,7 +372,7 @@ const DoctorProfile = () => {
                   </div>
                 </div>
 
-                <Button onClick={() => handleSave("Professional")} className="mt-4">
+                <Button onClick={handleSaveProfessionalInfo} className="mt-4">
                   <Save className="w-4 h-4 mr-2" />
                   Save Changes
                 </Button>
@@ -295,65 +382,46 @@ const DoctorProfile = () => {
 
           {/* Security & Password */}
           <TabsContent value="security">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="w-5 h-5" />
-                    Change Password
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input id="currentPassword" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <Input id="newPassword" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input id="confirmPassword" type="password" />
-                  </div>
-                  <Button onClick={() => handleSave("Password")}>
-                    Update Password
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5" />
-                    Security & Privacy
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Two-Factor Authentication</Label>
-                      <p className="text-sm text-muted-foreground">Add extra security to your account</p>
-                    </div>
-                    <Switch />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Session Timeout</Label>
-                      <p className="text-sm text-muted-foreground">Auto-logout after inactivity</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Login Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Get notified of new logins</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="w-5 h-5" />
+                  Change Password
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input 
+                    id="currentPassword" 
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input 
+                    id="newPassword" 
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input 
+                    id="confirmPassword" 
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                  />
+                </div>
+                <Button onClick={handleChangePassword}>
+                  Update Password
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
 
@@ -391,7 +459,7 @@ const DoctorProfile = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => navigate(`/find-patient?id=${patient.id}`)}
+                              onClick={() => navigate('/find-patient', { state: { patientId: patient.id } })}
                             >
                               View Details
                             </Button>
