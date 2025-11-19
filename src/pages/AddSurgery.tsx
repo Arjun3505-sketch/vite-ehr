@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,13 @@ const AddSurgery = () => {
     filePath: "" as string
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Handle file input changes
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setSelectedFile(file);
+    setFormData(prev => ({ ...prev, filePath: file ? file.name : "" }));
+  };
 
   // Handle AI-extracted data from Gemini
   const handleDataExtracted = (extractedData: any, file?: File) => {
@@ -262,29 +269,32 @@ const AddSurgery = () => {
                 />
               </div>
 
-              {/* File Upload */}
-              <div className="space-y-2">
-                <Label htmlFor="file">Attach File (Optional)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    className="flex-1"
-                  />
-                  <Upload className="w-5 h-5 text-muted-foreground" />
-                </div>
-                {formData.file && (
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {formData.file.name}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Supported formats: PDF, JPG, PNG (Max 10MB)
-                </p>
-              </div>
+              {/* 
+  File Upload 
+  <div className="space-y-2">
+    <Label htmlFor="file">Attach File (Optional)</Label>
+    <div className="flex items-center gap-2">
+      <Input
+        id="file"
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png"
+        onChange={handleFileChange}
+        className="flex-1"
+      />
+      <Upload className="w-5 h-5 text-muted-foreground" />
+    </div>
+    {selectedFile && (
+      <p className="text-sm text-muted-foreground">
+        Selected: {selectedFile.name}
+      </p>
+    )}
+    <p className="text-xs text-muted-foreground">
+      Supported formats: PDF, JPG, PNG (Max 10MB)
+    </p>
+  </div>
+*/}
 
+              
               {/* Submit Button */}
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={loading} className="flex-1">
