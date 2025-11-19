@@ -2,7 +2,7 @@ import os
 import google.generativeai as genai
 
 # Configure Gemini API
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', 'AIzaSyCqNjWgxoGVaiLQDDq9j3FapzUPiHoh-wc')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
 def chatbot_with_data(patient_id, user_input, diagnoses_data, prescriptions_data, lab_reports_data=None):
@@ -94,6 +94,7 @@ Please provide a helpful, accurate response based on this data:"""
                 max_output_tokens=1024,
             )
         )
+        print("RAW GEMINI RESPONSE:", response)
         
         return response.text
         
