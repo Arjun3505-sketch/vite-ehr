@@ -12,7 +12,7 @@ console.log("VITE_GEMINI_API_KEY:", import.meta.env.VITE_GEMINI_API_KEY);
 /**
  * ImageUploader Component with Gemini AI Integration
  * 
- * This component uses Google's Gemini AI (gemini-1.5-flash) to perform:
+ * This component uses Google's Gemini AI (gemini-2.5-flash) to perform:
  * 1. OCR (Optical Character Recognition) - Extract text from images
  * 2. NLP (Natural Language Processing) - Understand and structure medical data
  * 
@@ -28,7 +28,7 @@ interface ImageUploaderProps {
   onDataExtracted: (data: any, file?: File) => void;
   acceptedFormats?: string;
   label?: string;
-  promptType?: 'diagnosis' | 'prescription' | 'lab-report';
+  promptType?: 'diagnosis' | 'prescription' | 'lab-report' | 'surgery';
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({ 
@@ -46,37 +46,53 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     switch(promptType) {
       case 'diagnosis':
         return `You are a medical AI assistant. Analyze this medical document and extract diagnosis information.
-Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks):
+Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
+  "patientId": "patient ID or medical record number",
   "diagnosis": "primary diagnosis or condition",
   "details": "detailed clinical notes including symptoms, treatment plan, medications, observations",
   "severity": "mild|moderate|severe|critical"
 }
-If any field cannot be determined, use an empty string.`;
+If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
       
       case 'prescription':
         return `You are a medical AI assistant. Analyze this prescription document and extract medication information.
-Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks):
+Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
+  "patientId": "patient ID or medical record number",
   "medication": "medication name",
   "dosage": "dosage amount",
   "frequency": "how often to take",
   "duration": "duration of treatment",
   "instructions": "special instructions or notes"
 }
-If any field cannot be determined, use an empty string.`;
+If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
       
       case 'lab-report':
         return `You are a medical AI assistant. Analyze this lab report and extract test information.
-Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks):
+Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
+  "patientId": "patient ID or medical record number",
   "testName": "name of the test",
   "result": "test result value",
   "units": "measurement units",
   "referenceRange": "normal reference range",
   "notes": "any additional notes or observations"
 }
-If any field cannot be determined, use an empty string.`;
+If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
+      
+      case 'surgery':
+        return `You are a medical AI assistant. Analyze this surgery document and extract surgical procedure information.
+Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
+{
+  "patientId": "patient ID or medical record number",
+  "procedure": "name of the surgical procedure",
+  "outcome": "outcome or result of surgery",
+  "complications": "any complications that occurred",
+  "icdPcsCode": "ICD-PCS code if available",
+  "remarks": "additional notes, findings, or observations"
+}
+If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
       
       default:
         return '';

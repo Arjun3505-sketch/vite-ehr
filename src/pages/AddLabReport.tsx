@@ -196,18 +196,13 @@ const AddLabReport = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="testType">Test Type</Label>
-                <Select onValueChange={(value) => setFormData({...formData, testType: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select test type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {testTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="testType"
+                  placeholder="e.g., Blood Test - CBC, X-Ray, MRI, CT Scan"
+                  value={formData.testType}
+                  onChange={(e) => setFormData({...formData, testType: e.target.value})}
+                  required
+                />
               </div>
 
               <div className="space-y-2">

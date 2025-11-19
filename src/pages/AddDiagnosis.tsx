@@ -211,17 +211,12 @@ const AddDiagnosis = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="severity">Severity</Label>
-                <Select onValueChange={(value) => setFormData({...formData, severity: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mild">Mild</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="severe">Severe</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="severity"
+                  placeholder="e.g., Mild, Moderate, Severe, Critical"
+                  value={formData.severity}
+                  onChange={(e) => setFormData({...formData, severity: e.target.value})}
+                />
               </div>
 
               <div className="space-y-2">

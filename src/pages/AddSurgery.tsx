@@ -179,7 +179,7 @@ const AddSurgery = () => {
               <ImageUploader 
                 onDataExtracted={handleDataExtracted}
                 label="Gemini AI Scanner - Auto-fill from Surgery Report"
-                promptType="diagnosis"
+                promptType="surgery"
               />
 
               {/* Patient Selection */}
@@ -221,19 +221,13 @@ const AddSurgery = () => {
               {/* Outcome */}
               <div className="space-y-2">
                 <Label htmlFor="outcome">Outcome *</Label>
-                <Select 
-                  value={formData.outcome} 
-                  onValueChange={(value) => setFormData({...formData, outcome: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select outcome" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="successful">Successful</SelectItem>
-                    <SelectItem value="complication">Complication</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="outcome"
+                  placeholder="e.g., Successful, Complication, Failed"
+                  value={formData.outcome}
+                  onChange={(e) => setFormData({...formData, outcome: e.target.value})}
+                  required
+                />
               </div>
 
               {/* Complications */}
