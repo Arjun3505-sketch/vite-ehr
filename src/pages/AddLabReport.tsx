@@ -10,6 +10,7 @@ import { ArrowLeft, Save, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { ImageUploader } from "@/components/ocr/ImageUploader";
 
 const AddLabReport = () => {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ const AddLabReport = () => {
     testType: "",
     remarks: "",
     tags: "",
-    file: null as File | null
+    filePath: "" as string
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const testTypes = [
     "Blood Test - CBC",
@@ -39,33 +41,23 @@ const AddLabReport = () => {
     "Other"
   ];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Handle AI-extracted data from Gemini
+  const handleDataExtracted = (extractedData: any, file?: File) => {
+    console.log("AI Extracted Data:", extractedData);
+    console.log("Selected File:", file?.name);
+
+    // Store the file for later upload
     if (file) {
-      // Validate file type and size
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      const maxSize = 10 * 1024 * 1024; // 10MB
-
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a PDF, JPG, or PNG file.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (file.size > maxSize) {
-        toast({
-          title: "File Too Large",
-          description: "Please upload a file smaller than 10MB.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setFormData({...formData, file});
+      setSelectedFile(file);
     }
+
+    setFormData(prev => ({
+      ...prev,
+      testType: extractedData.testType || prev.testType,
+      remarks: extractedData.remarks || prev.remarks,
+      patientId: extractedData.patientId || prev.patientId,
+      date: extractedData.date || prev.date,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,15 +67,6 @@ const AddLabReport = () => {
       toast({
         title: "Error",
         description: "You must be logged in to add a lab report.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!formData.file) {
-      toast({
-        title: "Error",
-        description: "Please upload a lab report file.",
         variant: "destructive"
       });
       return;
@@ -103,18 +86,25 @@ const AddLabReport = () => {
         throw new Error("Doctor profile not found. Please complete your profile setup.");
       }
 
-      // Upload file with patient_id-based folder structure
-      const fileExt = formData.file.name.split('.').pop();
-      const timestamp = Date.now();
-      const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const fileName = `${timestamp}_${sanitizedFileName}`;
-      const filePath = `lab-reports/${formData.patientId}/${fileName}`;
+      // Upload file if selected
+      let uploadedFilePath: string | null = null;
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+        const filePath = `lab-reports/${formData.patientId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('medical-files')
-        .upload(filePath, formData.file);
+        const { error: uploadError } = await supabase.storage
+          .from('medical-files')
+          .upload(filePath, selectedFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-      if (uploadError) throw uploadError;
+        if (uploadError) {
+          throw new Error(`File upload failed: ${uploadError.message}`);
+        }
+        uploadedFilePath = filePath;
+      }
 
       // Insert lab report with correct doctor_id
       const { error } = await supabase
@@ -126,8 +116,7 @@ const AddLabReport = () => {
           report_type: formData.testType,
           remarks: formData.remarks,
           tags: formData.tags ? { tags: formData.tags.split(',').map(t => t.trim()) } : null,
-          file_path: filePath,
-          file_url: filePath
+          file_path: uploadedFilePath
         });
 
       if (error) throw error;
@@ -165,6 +154,13 @@ const AddLabReport = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* AI Document Scanner */}
+              <ImageUploader 
+                onDataExtracted={handleDataExtracted}
+                label="Gemini AI Scanner - Auto-fill from Lab Report"
+                promptType="lab-report"
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="patientId">Patient ID</Label>
@@ -213,46 +209,6 @@ const AddLabReport = () => {
                   value={formData.tags}
                   onChange={(e) => setFormData({...formData, tags: e.target.value})}
                 />
-              </div>
-
-              {/* File Upload */}
-              <div className="space-y-2">
-                <Label htmlFor="file">Upload Report File</Label>
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                  <div className="text-center">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <div className="space-y-2">
-                      <Label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="text-sm font-medium text-primary hover:text-primary/80">
-                          Click to upload
-                        </span>
-                        <span className="text-sm text-muted-foreground"> or drag and drop</span>
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        PDF, PNG, JPG up to 10MB
-                      </p>
-                    </div>
-                    <Input
-                      id="file-upload"
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFileChange}
-                      required
-                    />
-                  </div>
-                  {formData.file && (
-                    <div className="mt-4 p-3 bg-muted rounded-md">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        <span className="text-sm font-medium">{formData.file.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
 
               <div className="space-y-2">

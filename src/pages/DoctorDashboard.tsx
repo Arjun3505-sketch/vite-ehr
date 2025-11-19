@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { ChatbotButton } from "@/components/chat/ChatbotButton";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
@@ -258,6 +259,9 @@ const DoctorDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Floating Chatbot Button */}
+      <ChatbotButton />
     </div>
   );
 };

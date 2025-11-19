@@ -88,6 +88,46 @@ const LabReports = () => {
     });
   };
 
+  const handleDownload = async (filePath: string | null, reportType: string) => {
+    if (!filePath) {
+      toast({
+        title: "No File",
+        description: "This report doesn't have an attached file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('medical-files')
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lab_report_${reportType.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Success",
+        description: "File downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getUrgencyBadge = (tags: any) => {
     const isUrgent = tags?.urgent;
     return (
@@ -160,7 +200,7 @@ const LabReports = () => {
                     </TableCell>
                     <TableCell>
                       {report.file_path && (
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleDownload(report.file_path, report.report_type)}>
                           <Download className="w-4 h-4 mr-1" />
                           Download
                         </Button>

@@ -118,6 +118,7 @@ const MedicalHistory = ({ patientId }: MedicalHistoryProps = {}) => {
             doctor_name: doctorMap.get(s.surgeon_id) || 'Unknown Doctor',
             title: s.procedure,
             details: `Outcome: ${s.outcome}${s.complications ? `, Complications: ${s.complications}` : ''}`,
+            file_url: s.file_url,
           });
         });
       }

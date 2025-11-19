@@ -10,6 +10,7 @@ import { ArrowLeft, Save, Upload, Scissors } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { ImageUploader } from "@/components/ocr/ImageUploader";
 
 const AddSurgery = () => {
   const navigate = useNavigate();
@@ -24,35 +25,30 @@ const AddSurgery = () => {
     complications: "",
     icdPcsCode: "",
     remarks: "",
-    file: null as File | null
+    filePath: "" as string
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Handle AI-extracted data from Gemini
+  const handleDataExtracted = (extractedData: any, file?: File) => {
+    console.log("AI Extracted Data:", extractedData);
+    console.log("Selected File:", file?.name);
+
+    // Store the file for later upload
     if (file) {
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      const maxSize = 10 * 1024 * 1024;
-
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a PDF, JPG, or PNG file.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (file.size > maxSize) {
-        toast({
-          title: "File Too Large",
-          description: "Please upload a file smaller than 10MB.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setFormData({...formData, file});
+      setSelectedFile(file);
     }
+
+    setFormData(prev => ({
+      ...prev,
+      procedure: extractedData.procedure || prev.procedure,
+      outcome: extractedData.outcome || prev.outcome,
+      complications: extractedData.complications || prev.complications,
+      icdPcsCode: extractedData.icdPcsCode || prev.icdPcsCode,
+      remarks: extractedData.remarks || prev.remarks,
+      patientId: extractedData.patientId || prev.patientId,
+      date: extractedData.date || prev.date,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,22 +86,24 @@ const AddSurgery = () => {
         throw new Error("Doctor profile not found. Please complete your profile setup.");
       }
 
-      let fileUrl = null;
-
-      // Upload file if exists
-      if (formData.file) {
-        const timestamp = Date.now();
-        const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const fileName = `${timestamp}_${sanitizedFileName}`;
+      // Upload file if selected
+      let uploadedFilePath: string | null = null;
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
         const filePath = `surgeries/${formData.patientId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('medical-files')
-          .upload(filePath, formData.file);
+          .upload(filePath, selectedFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
-
-        fileUrl = filePath;
+        if (uploadError) {
+          throw new Error(`File upload failed: ${uploadError.message}`);
+        }
+        uploadedFilePath = filePath;
       }
 
       // Insert surgery with correct doctor_id (surgeon_id)
@@ -120,7 +118,7 @@ const AddSurgery = () => {
           complications: formData.complications || null,
           icd_pcs_code: formData.icdPcsCode || null,
           remarks: formData.remarks || null,
-          file_url: fileUrl
+          file_url: uploadedFilePath
         });
 
       if (error) throw error;
@@ -168,6 +166,13 @@ const AddSurgery = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* AI Document Scanner */}
+              <ImageUploader 
+                onDataExtracted={handleDataExtracted}
+                label="Gemini AI Scanner - Auto-fill from Surgery Report"
+                promptType="diagnosis"
+              />
+
               {/* Patient Selection */}
               <div className="space-y-2">
                 <Label htmlFor="patientId">Patient ID *</Label>

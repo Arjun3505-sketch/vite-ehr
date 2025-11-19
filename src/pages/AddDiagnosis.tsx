@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Upload, FileText } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { ImageUploader } from "@/components/ocr/ImageUploader.tsx";
 
 const AddDiagnosis = () => {
   const navigate = useNavigate();
@@ -22,35 +24,34 @@ const AddDiagnosis = () => {
     diagnosis: "",
     details: "",
     severity: "",
-    file: null as File | null
+    filePath: "" as string
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Handle AI-extracted data from Gemini
+  const handleDataExtracted = (extractedData: any, file?: File) => {
+    console.log("AI Extracted Data:", extractedData);
+    console.log("Selected File:", file?.name);
+
+    // Store the file for later upload
     if (file) {
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      const maxSize = 10 * 1024 * 1024;
-
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          title: "Invalid File Type",
-          description: "Please upload a PDF, JPG, or PNG file.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (file.size > maxSize) {
-        toast({
-          title: "File Too Large",
-          description: "Please upload a file smaller than 10MB.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setFormData({...formData, file});
+      setSelectedFile(file);
     }
+
+    // Validate severity field
+    const validSeverities = ['mild', 'moderate', 'severe', 'critical'];
+    let severity = extractedData.severity?.toLowerCase() || '';
+    if (!validSeverities.includes(severity)) {
+      severity = ''; // Let user select if invalid
+    }
+
+    // Update form state with AI-extracted data
+    setFormData(prev => ({
+      ...prev,
+      diagnosis: extractedData.diagnosis || prev.diagnosis,
+      details: extractedData.details || prev.details,
+      severity: severity || prev.severity,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,25 +80,24 @@ const AddDiagnosis = () => {
         throw new Error("Doctor profile not found. Please complete your profile setup.");
       }
 
-      let fileUrl = null;
-      let filePath = null;
-
-      // Upload file if exists
-      if (formData.file) {
-        const fileExt = formData.file.name.split('.').pop();
-        const timestamp = Date.now();
-        const sanitizedFileName = formData.file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const fileName = `${timestamp}_${sanitizedFileName}`;
-        // Use patient_id-based folder structure
-        filePath = `diagnoses/${formData.patientId}/${fileName}`;
+      // Upload file if selected
+      let uploadedFilePath: string | null = null;
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+        const filePath = `diagnoses/${formData.patientId}/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('medical-files')
-          .upload(filePath, formData.file);
+          .upload(filePath, selectedFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
-
-        fileUrl = filePath;
+        if (uploadError) {
+          throw new Error(`File upload failed: ${uploadError.message}`);
+        }
+        uploadedFilePath = filePath;
       }
 
       // Insert diagnosis with correct doctor_id
@@ -110,10 +110,20 @@ const AddDiagnosis = () => {
           condition: formData.diagnosis,
           clinical_notes: formData.details,
           severity: formData.severity,
-          file_url: fileUrl
+          file_url: uploadedFilePath
         });
 
       if (error) throw error;
+
+      // Trigger Telegram Notification
+      try {
+        await axios.post('http://localhost:5000/send-notification', {
+          message: `📋 *New Diagnosis Added*\n\n👤 *Patient ID:* ${formData.patientId}\n🩺 *Condition:* ${formData.diagnosis}\n⚠️ *Severity:* ${formData.severity}`
+        });
+      } catch (notifyError) {
+        console.error("Failed to send notification:", notifyError);
+        // We don't stop the flow here, just log the error so the UI still updates
+      }
 
       toast({
         title: "Diagnosis Added",
@@ -148,6 +158,13 @@ const AddDiagnosis = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* AI Document Scanner */}
+              <ImageUploader 
+                onDataExtracted={handleDataExtracted}
+                label="Gemini AI Scanner - Auto-fill from Medical Document"
+                promptType="diagnosis"
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="patientId">Patient ID</Label>
@@ -207,45 +224,6 @@ const AddDiagnosis = () => {
                   value={formData.details}
                   onChange={(e) => setFormData({...formData, details: e.target.value})}
                 />
-              </div>
-
-              {/* File Upload */}
-              <div className="space-y-2">
-                <Label htmlFor="file">Upload Supporting Document (Optional)</Label>
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                  <div className="text-center">
-                    <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <div className="space-y-2">
-                      <Label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="text-sm font-medium text-primary hover:text-primary/80">
-                          Click to upload
-                        </span>
-                        <span className="text-sm text-muted-foreground"> or drag and drop</span>
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        PDF, PNG, JPG up to 10MB
-                      </p>
-                    </div>
-                    <Input
-                      id="file-upload"
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFileChange}
-                    />
-                  </div>
-                  {formData.file && (
-                    <div className="mt-4 p-3 bg-muted rounded-md">
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        <span className="text-sm font-medium">{formData.file.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({(formData.file.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
 
               <div className="flex gap-4 pt-4">
