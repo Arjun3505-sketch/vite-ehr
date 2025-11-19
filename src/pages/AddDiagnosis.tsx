@@ -83,11 +83,17 @@ const AddDiagnosis = () => {
       // Upload file if selected
       let uploadedFilePath: string | null = null;
       if (selectedFile) {
+        console.log('Starting file upload:', selectedFile.name);
+        console.log('File size:', selectedFile.size, 'bytes');
+        console.log('File type:', selectedFile.type);
+        
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
         const filePath = `diagnoses/${formData.patientId}/${fileName}`;
+        
+        console.log('Uploading to path:', filePath);
 
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('medical-files')
           .upload(filePath, selectedFile, {
             cacheControl: '3600',
@@ -95,8 +101,11 @@ const AddDiagnosis = () => {
           });
 
         if (uploadError) {
+          console.error('Upload error details:', uploadError);
           throw new Error(`File upload failed: ${uploadError.message}`);
         }
+        
+        console.log('File uploaded successfully:', uploadData);
         uploadedFilePath = filePath;
       }
 
@@ -226,10 +235,22 @@ const AddDiagnosis = () => {
                 />
               </div>
 
+              {/* File Upload Status Indicator */}
+              {selectedFile && (
+                <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    📎 File ready to upload: <strong>{selectedFile.name}</strong> ({(selectedFile.size / 1024).toFixed(2)} KB)
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    This file will be uploaded to Supabase when you click "Save Diagnosis"
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-4 pt-4">
                 <Button type="submit" className="flex-1" disabled={loading}>
                   <Save className="w-4 h-4 mr-2" />
-                  {loading ? "Saving..." : "Save Diagnosis"}
+                  {loading ? "Saving..." : selectedFile ? "Save Diagnosis & Upload File" : "Save Diagnosis"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate("/doctor-dashboard")}>
                   Cancel

@@ -85,6 +85,16 @@ const DoctorProfileSetup = () => {
 
       if (profileError) throw profileError;
 
+      // Insert doctor role into user_roles table (CRITICAL for storage permissions)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ user_id: user.id, role: 'doctor' }, { onConflict: 'user_id,role' });
+
+      if (roleError) {
+        console.error('Error creating doctor role:', roleError);
+        throw roleError;
+      }
+
       // Insert into doctors table
       const { error: doctorError } = await supabase
         .from('doctors')

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,13 +28,6 @@ const AddSurgery = () => {
     filePath: "" as string
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Handle file input changes
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setSelectedFile(file);
-    setFormData(prev => ({ ...prev, filePath: file ? file.name : "" }));
-  };
 
   // Handle AI-extracted data from Gemini
   const handleDataExtracted = (extractedData: any, file?: File) => {
@@ -96,11 +89,17 @@ const AddSurgery = () => {
       // Upload file if selected
       let uploadedFilePath: string | null = null;
       if (selectedFile) {
+        console.log('Starting file upload:', selectedFile.name);
+        console.log('File size:', selectedFile.size, 'bytes');
+        console.log('File type:', selectedFile.type);
+        
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
         const filePath = `surgeries/${formData.patientId}/${fileName}`;
+        
+        console.log('Uploading to path:', filePath);
 
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('medical-files')
           .upload(filePath, selectedFile, {
             cacheControl: '3600',
@@ -108,8 +107,11 @@ const AddSurgery = () => {
           });
 
         if (uploadError) {
+          console.error('Upload error details:', uploadError);
           throw new Error(`File upload failed: ${uploadError.message}`);
         }
+        
+        console.log('File uploaded successfully:', uploadData);
         uploadedFilePath = filePath;
       }
 
@@ -269,37 +271,23 @@ const AddSurgery = () => {
                 />
               </div>
 
-              {/* 
-  File Upload 
-  <div className="space-y-2">
-    <Label htmlFor="file">Attach File (Optional)</Label>
-    <div className="flex items-center gap-2">
-      <Input
-        id="file"
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png"
-        onChange={handleFileChange}
-        className="flex-1"
-      />
-      <Upload className="w-5 h-5 text-muted-foreground" />
-    </div>
-    {selectedFile && (
-      <p className="text-sm text-muted-foreground">
-        Selected: {selectedFile.name}
-      </p>
-    )}
-    <p className="text-xs text-muted-foreground">
-      Supported formats: PDF, JPG, PNG (Max 10MB)
-    </p>
-  </div>
-*/}
+              {/* File Upload Status Indicator */}
+              {selectedFile && (
+                <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    📎 File ready to upload: <strong>{selectedFile.name}</strong> ({(selectedFile.size / 1024).toFixed(2)} KB)
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    This file will be uploaded to Supabase when you click "Add Surgery Record"
+                  </p>
+                </div>
+              )}
 
-              
               {/* Submit Button */}
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={loading} className="flex-1">
                   <Save className="w-4 h-4 mr-2" />
-                  {loading ? "Adding Surgery..." : "Add Surgery Record"}
+                  {loading ? "Adding Surgery..." : selectedFile ? "Add Surgery & Upload File" : "Add Surgery Record"}
                 </Button>
                 <Button 
                   type="button" 
