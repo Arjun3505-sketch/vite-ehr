@@ -6,7 +6,8 @@ import { Loader2, ScanLine, X, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyCqNjWgxoGVaiLQDDq9j3FapzUPiHoh-wc";
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY ;
+console.log("VITE_GEMINI_API_KEY:", import.meta.env.VITE_GEMINI_API_KEY);
 
 /**
  * ImageUploader Component with Gemini AI Integration
@@ -118,103 +119,167 @@ If any field cannot be determined, use an empty string.`;
   };
 
   const handleProcessImage = async () => {
-    if (!selectedImage) return;
+  if (!selectedImage) return;
 
-    setProcessing(true);
+  setProcessing(true);
 
+  // Retry wrapper with exponential backoff
+  const callWithRetry = async (fn: any, retries = 4, delay = 1200): Promise<any> => {
     try {
-      toast({
-        title: "Analyzing Document",
-        description: "Gemini AI is extracting data from your document...",
-      });
+      return await fn();
+    } catch (err: any) {
+      console.error(`⚠️ Gemini call failed. Retries left: ${retries}`, err);
 
-      // Continue with AI analysis (no upload yet)
-      const base64Data = await fileToBase64(selectedImage);
-      const prompt = getPromptForType();
+      if (retries === 0) throw err;
+
+      if (err.message?.includes("overloaded") || err.message?.includes("503")) {
+        console.warn(`⚠️ Model overloaded. Retrying in ${delay}ms`);
+        await new Promise(res => setTimeout(res, delay));
+        return callWithRetry(fn, retries - 1, delay * 1.8);
+      }
+
+      throw err;
+    }
+  };
+
+  try {
+    toast({
+      title: "Analyzing Document",
+      description: "Gemini AI is extracting data from your document...",
+    });
+
+    // Convert file → base64
+    const base64Data = await fileToBase64(selectedImage);
+
+    // Log file + base64 details
+    console.log("📄 FILE INFO:", {
+      name: selectedImage.name,
+      type: selectedImage.type,
+      size_MB: (selectedImage.size / 1024 / 1024).toFixed(2),
+    });
+
+    console.log("🧪 BASE64 DEBUG:", {
+      base64_length: base64Data.length,
+      approx_MB: (base64Data.length * 0.75 / 1_000_000).toFixed(2),
+    });
+
+    const prompt = getPromptForType();
+
+    // API call block
+    const callGemini = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, 60000); // 60 seconds timeout
+
+      console.log("🌐 Sending request to Gemini...");
+
+      const fetchBody = {
+        contents: [{
+          parts: [
+            { text: prompt },
+            {
+              inline_data: {
+                mime_type: selectedImage.type,
+                data: base64Data
+              }
+            }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.4,
+          topK: 32,
+          topP: 1,
+          maxOutputTokens: 2048,
+        }
+      };
+
+      console.log("📤 REQUEST PAYLOAD SUMMARY:", {
+        prompt_length: prompt.length,
+        payload_mb: (JSON.stringify(fetchBody).length / 1_000_000).toFixed(2)
+      });
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                {
-                  inline_data: {
-                    mime_type: selectedImage.type,
-                    data: base64Data
-                  }
-                }
-              ]
-            }],
-            generationConfig: {
-              temperature: 0.4,
-              topK: 32,
-              topP: 1,
-              maxOutputTokens: 2048,
-            }
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fetchBody),
+          signal: controller.signal,
         }
       );
 
+      clearTimeout(timeout);
+
+      console.log("📥 Response status:", response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `API request failed with status ${response.status}`);
+        const errData = await response.json().catch(() => ({}));
+        console.error("❌ Gemini Error Response:", errData);
+        throw new Error(
+          errData.error?.message ||
+          `Gemini request failed (${response.status})`
+        );
       }
 
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      
-      if (text && text.trim().length > 0) {
-        // Extract JSON from response - handle markdown code blocks
-        let jsonString = text.trim();
-        
-        // Remove markdown code blocks if present
-        jsonString = jsonString.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
-        
-        // Extract JSON object
-        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            const extractedData = JSON.parse(jsonMatch[0]);
-            
-            // Send the extracted data AND the file object to the parent component
-            onDataExtracted(extractedData, selectedImage);
-            
-            toast({
-              title: "Success",
-              description: "Document analyzed. Form fields auto-filled. Click Submit to upload.",
-            });
-          } catch (parseError) {
-            console.error("JSON Parse Error:", parseError);
-            throw new Error("Could not parse AI response. Please try again.");
-          }
-        } else {
-          throw new Error("Could not parse AI response");
+      return response.json();
+    };
+
+    // WRAPPED CALL WITH RETRY
+    const data = await callWithRetry(callGemini);
+
+    console.log("🔥 RAW GEMINI RESPONSE:", data);
+    console.log("🔥 FULL TEXT OUTPUT:", data?.candidates?.[0]?.content?.parts?.[0]?.text);
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    if (text.trim()) {
+      let jsonString = text.trim();
+      jsonString = jsonString.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+
+      console.log("📝 CLEANED AI TEXT:", jsonString);
+
+      const match = jsonString.match(/\{[\s\S]*\}/);
+
+      if (match) {
+        try {
+          const extracted = JSON.parse(match[0]);
+          console.log("✅ PARSED JSON:", extracted);
+
+          onDataExtracted(extracted, selectedImage);
+
+          toast({
+            title: "Success",
+            description: "Document analyzed. Form fields auto-filled.",
+          });
+        } catch (parseError) {
+          console.error("❌ JSON Parse Error:", parseError);
+          throw new Error("Could not parse JSON in AI response.");
         }
       } else {
-        toast({
-          title: "No Data Found",
-          description: "Could not extract information from the document.",
-          variant: "destructive",
-        });
+        throw new Error("AI response did not contain a JSON object.");
       }
-
-    } catch (err: any) {
-      console.error("Process Error:", err);
+    } else {
       toast({
-        title: "Process Failed",
-        description: err.message || "Failed to upload or process the document.",
+        title: "No Data Found",
+        description: "Could not extract info from the document.",
         variant: "destructive",
       });
-    } finally {
-      setProcessing(false);
     }
-  };
+
+  } catch (err: any) {
+    console.error("❌ FINAL ERROR:", err);
+
+    toast({
+      title: "Gemini Failed",
+      description: err.message || "An unexpected error occurred.",
+      variant: "destructive",
+    });
+  } finally {
+    setProcessing(false);
+  }
+};
+
 
   return (
     <div className="space-y-4 p-4 border-2 border-dashed border-primary/25 rounded-lg bg-primary/5">
