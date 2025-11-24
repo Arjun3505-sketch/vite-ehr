@@ -30,8 +30,10 @@ const AddDiagnosis = () => {
 
   // Handle AI-extracted data from Gemini
   const handleDataExtracted = (extractedData: any, file?: File) => {
-    console.log("AI Extracted Data:", extractedData);
-    console.log("Selected File:", file?.name);
+    console.log("🔍 AI Extracted Data:", extractedData);
+    console.log("📄 Selected File:", file?.name);
+    console.log("📋 Expected fields: patientId, date, diagnosis, details, severity");
+    console.log("✅ Extracted fields:", Object.keys(extractedData));
 
     // Store the file for later upload
     if (file) {
@@ -48,10 +50,14 @@ const AddDiagnosis = () => {
     // Update form state with AI-extracted data
     setFormData(prev => ({
       ...prev,
+      patientId: extractedData.patientId || prev.patientId,
+      date: extractedData.date || prev.date,
       diagnosis: extractedData.diagnosis || prev.diagnosis,
       details: extractedData.details || prev.details,
       severity: severity || prev.severity,
     }));
+    
+    console.log("💾 Form updated with extracted data");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,19 +157,19 @@ const AddDiagnosis = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" onClick={() => navigate("/doctor-dashboard")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Add Diagnosis</h1>
+          <h1 className="text-3xl font-bold text-white">Add Diagnosis</h1>
         </div>
 
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle>New Diagnosis Entry</CardTitle>
+            <CardTitle className="text-white">New Diagnosis Entry</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -176,55 +182,59 @@ const AddDiagnosis = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="patientId">Patient ID</Label>
+                  <Label htmlFor="patientId" className="text-neutral-200">Patient ID</Label>
                   <Input
                     id="patientId"
                     placeholder="Enter patient ID"
                     value={formData.patientId}
                     onChange={(e) => setFormData({...formData, patientId: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="date" className="text-neutral-200">Date</Label>
                   <Input
                     id="date"
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="diagnosis">Diagnosis</Label>
+                <Label htmlFor="diagnosis" className="text-neutral-200">Diagnosis</Label>
                 <Input
                   id="diagnosis"
                   placeholder="Enter diagnosis"
                   value={formData.diagnosis}
                   onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
                   required
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="severity">Severity</Label>
+                <Label htmlFor="severity" className="text-neutral-200">Severity</Label>
                 <Input
                   id="severity"
                   placeholder="e.g., Mild, Moderate, Severe, Critical"
                   value={formData.severity}
                   onChange={(e) => setFormData({...formData, severity: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="details">Details & Notes</Label>
+                <Label htmlFor="details" className="text-neutral-200">Details & Notes</Label>
                 <Textarea
                   id="details"
                   placeholder="Enter detailed diagnosis information, symptoms, treatment plan..."
-                  className="min-h-[120px]"
+                  className="min-h-[120px] bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   value={formData.details}
                   onChange={(e) => setFormData({...formData, details: e.target.value})}
                 />
@@ -243,7 +253,7 @@ const AddDiagnosis = () => {
               )}
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={loading}>
                   <Save className="w-4 h-4 mr-2" />
                   {loading ? "Saving..." : selectedFile ? "Save Diagnosis & Upload File" : "Save Diagnosis"}
                 </Button>

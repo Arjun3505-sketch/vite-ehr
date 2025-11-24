@@ -41,6 +41,7 @@ export const Chatbot = ({ onClose }: ChatbotProps) => {
     }
   }, [messages]);
 
+// ...existing code...
   const handleSend = async () => {
     if (!input.trim() || !patientId.trim()) {
       toast({
@@ -71,12 +72,22 @@ export const Chatbot = ({ onClose }: ChatbotProps) => {
         throw new Error("Failed to fetch patient data");
       }
 
-      const { diagnoses, prescriptions, lab_reports } = fetchRes.data;
+      const { diagnoses, prescriptions, lab_reports, surgeries, vaccinations } = fetchRes.data;
+
+      // DEBUG: Log what we received
+      console.log("🔍 Fetched data:", {
+        diagnoses: diagnoses?.length,
+        prescriptions: prescriptions?.length,
+        lab_reports: lab_reports?.length,
+        surgeries: surgeries?.length,
+        vaccinations: vaccinations?.length
+      });
+      console.log("🔍 Surgeries data:", surgeries);
 
       // Show fetching status
       const fetchingMessage: Message = {
         role: "bot",
-        content: `📊 Found ${diagnoses.length} diagnoses, ${prescriptions.length} prescriptions, and ${lab_reports.length} lab reports. Analyzing...`,
+        content: `📊 Found ${diagnoses.length} diagnoses, ${prescriptions.length} prescriptions, ${lab_reports?.length || 0} lab reports, ${surgeries?.length || 0} surgeries, and ${vaccinations?.length || 0} vaccinations. Analyzing...`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, fetchingMessage]);
@@ -87,7 +98,9 @@ export const Chatbot = ({ onClose }: ChatbotProps) => {
         message: userMessage.content,
         diagnoses: diagnoses,
         prescriptions: prescriptions,
-        lab_reports: lab_reports,
+        lab_reports: lab_reports || [],
+        surgeries: surgeries || [],
+        vaccinations: vaccinations || []
       });
 
       if (!chatRes.data.success) {
@@ -110,34 +123,23 @@ export const Chatbot = ({ onClose }: ChatbotProps) => {
 
     } catch (error: any) {
       console.error("Chatbot error:", error);
-      
-      let errorMessage = "Sorry, I encountered an error. ";
-      
-      if (error.response?.status === 404) {
-        errorMessage += "Could not connect to the Flask server. Make sure it's running on port 5000.";
-      } else if (error.response?.data?.error) {
-        errorMessage += error.response.data.error;
-      } else {
-        errorMessage += error.message || "Please try again.";
-      }
-
-      const errorMsg: Message = {
+      const errorMessage: Message = {
         role: "bot",
-        content: errorMessage,
+        content: `❌ Error: ${error.response?.data?.error || error.message}`,
         timestamp: new Date(),
       };
-      
-      setMessages((prev) => [...prev, errorMsg]);
-      
+      setMessages((prev) => [...prev, errorMessage]);
+
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error.response?.data?.error || error.message,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+// ...existing code...
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !loading) {

@@ -12,7 +12,7 @@ const MedicalData = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -20,8 +20,8 @@ const MedicalData = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Medical Data</h1>
-            <p className="text-muted-foreground">View all medical records and patient data</p>
+            <h1 className="text-3xl font-bold text-white">Medical Data</h1>
+            <p className="text-neutral-300">View all medical records and patient data</p>
           </div>
         </div>
 

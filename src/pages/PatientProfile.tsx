@@ -179,7 +179,7 @@ const PatientProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" onClick={() => navigate("/patient-dashboard")}>
@@ -187,8 +187,8 @@ const PatientProfile = () => {
           Back to Dashboard
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Profile Settings</h1>
-          <p className="text-muted-foreground">Manage your account and preferences</p>
+          <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
+          <p className="text-neutral-300">Manage your account and preferences</p>
         </div>
       </div>
 
@@ -210,82 +210,90 @@ const PatientProfile = () => {
 
         {/* Personal Information */}
         <TabsContent value="personal" className="space-y-6">
-          <Card>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+              <CardTitle className="text-white">Personal Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-neutral-200">First Name</Label>
                   <Input
                     id="firstName"
                     value={personalInfo.firstName}
                     onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-neutral-200">Last Name</Label>
                   <Input
                     id="lastName"
                     value={personalInfo.lastName}
                     onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-neutral-200">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={personalInfo.email}
                     onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone" className="text-neutral-200">Phone</Label>
                   <Input
                     id="phone"
                     value={personalInfo.phone}
                     onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Label htmlFor="dateOfBirth" className="text-neutral-200">Date of Birth</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
                     value={personalInfo.dateOfBirth}
                     onChange={(e) => setPersonalInfo({...personalInfo, dateOfBirth: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="bloodGroup">Blood Group</Label>
+                  <Label htmlFor="bloodGroup" className="text-neutral-200">Blood Group</Label>
                   <Input
                     id="bloodGroup"
                     value={personalInfo.bloodGroup}
                     onChange={(e) => setPersonalInfo({...personalInfo, bloodGroup: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="address" className="text-neutral-200">Address</Label>
                   <Input
                     id="address"
                     value={personalInfo.address}
                     onChange={(e) => setPersonalInfo({...personalInfo, address: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="emergencyContact">Emergency Contact (Name - Phone)</Label>
+                  <Label htmlFor="emergencyContact" className="text-neutral-200">Emergency Contact (Name - Phone)</Label>
                   <Input
                     id="emergencyContact"
                     value={personalInfo.emergencyContact}
                     onChange={(e) => setPersonalInfo({...personalInfo, emergencyContact: e.target.value})}
                     placeholder="John Doe - 1234567890"
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
               </div>
 
-              <Button onClick={handleSavePersonalInfo} className="w-full">
+              <Button onClick={handleSavePersonalInfo} className="w-full bg-blue-600 hover:bg-blue-700">
                 <Save className="w-4 h-4 mr-2" />
                 Save Personal Information
               </Button>
@@ -295,39 +303,42 @@ const PatientProfile = () => {
 
         {/* Account Settings */}
         <TabsContent value="account" className="space-y-6">
-          <Card>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
             <CardHeader>
-              <CardTitle>Change Password</CardTitle>
+              <CardTitle className="text-white">Change Password</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
+                <Label htmlFor="currentPassword" className="text-neutral-200">Current Password</Label>
                 <Input 
                   id="currentPassword" 
                   type="password"
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword" className="text-neutral-200">New Password</Label>
                 <Input 
                   id="newPassword" 
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword" className="text-neutral-200">Confirm New Password</Label>
                 <Input 
                   id="confirmPassword" 
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
-              <Button onClick={handleChangePassword}>Update Password</Button>
+              <Button onClick={handleChangePassword} className="bg-blue-600 hover:bg-blue-700">Update Password</Button>
             </CardContent>
           </Card>
         </TabsContent>

@@ -84,7 +84,7 @@ const FindPatient = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Button variant="outline" onClick={() => navigate("/doctor-dashboard")}>
@@ -92,15 +92,15 @@ const FindPatient = () => {
           Back to Dashboard
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Find Patient</h1>
-          <p className="text-muted-foreground">Search for patients by name, email, or ID</p>
+          <h1 className="text-3xl font-bold text-white">Find Patient</h1>
+          <p className="text-neutral-300">Search for patients by name, email, or ID</p>
         </div>
       </div>
 
       {/* Search Section */}
-      <Card className="mb-8">
+      <Card className="mb-8 bg-slate-800/80 backdrop-blur-sm border-slate-700">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Search className="w-5 h-5" />
             Patient Search
           </CardTitle>
@@ -112,9 +112,9 @@ const FindPatient = () => {
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="flex-1"
+              className="flex-1 bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
             />
-            <Button onClick={() => handleSearch()} disabled={loading}>
+            <Button onClick={() => handleSearch()} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
               <Search className="w-4 h-4 mr-2" />
               {loading ? "Searching..." : "Search"}
             </Button>
@@ -126,9 +126,9 @@ const FindPatient = () => {
       {patientData && (
         <div className="space-y-6">
           {/* Personal Information */}
-          <Card>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <User className="w-5 h-5" />
                 Patient Information
               </CardTitle>
@@ -136,47 +136,47 @@ const FindPatient = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm text-muted-foreground">Full Name</p>
-                  <p className="font-medium">{patientData.name}</p>
+                  <p className="text-sm text-neutral-400">Full Name</p>
+                  <p className="font-medium text-white">{patientData.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Patient ID</p>
-                  <p className="font-medium font-mono">{patientData.id}</p>
+                  <p className="text-sm text-neutral-400">Patient ID</p>
+                  <p className="font-medium font-mono text-white">{patientData.id}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{patientData.email || 'N/A'}</p>
+                  <p className="text-sm text-neutral-400">Email</p>
+                  <p className="font-medium text-white">{patientData.email || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{patientData.phone || 'N/A'}</p>
+                  <p className="text-sm text-neutral-400">Phone</p>
+                  <p className="font-medium text-white">{patientData.phone || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Date of Birth</p>
-                  <p className="font-medium">{patientData.dob ? formatDate(patientData.dob) : 'N/A'}</p>
+                  <p className="text-sm text-neutral-400">Date of Birth</p>
+                  <p className="font-medium text-white">{patientData.dob ? formatDate(patientData.dob) : 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Blood Group</p>
+                  <p className="text-sm text-neutral-400">Blood Group</p>
                   <Badge variant="outline">{patientData.blood_group || 'N/A'}</Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Gender</p>
-                  <p className="font-medium">{patientData.gender || 'N/A'}</p>
+                  <p className="text-sm text-neutral-400">Gender</p>
+                  <p className="font-medium text-white">{patientData.gender || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Registered</p>
-                  <p className="font-medium">{formatDate(patientData.created_at)}</p>
+                  <p className="text-sm text-neutral-400">Registered</p>
+                  <p className="font-medium text-white">{formatDate(patientData.created_at)}</p>
                 </div>
                 {patientData.address && (
                   <div className="md:col-span-2">
-                    <p className="text-sm text-muted-foreground">Address</p>
-                    <p className="font-medium">{patientData.address}</p>
+                    <p className="text-sm text-neutral-400">Address</p>
+                    <p className="font-medium text-white">{patientData.address}</p>
                   </div>
                 )}
                 {patientData.emergency_contact && (
                   <div className="md:col-span-2">
-                    <p className="text-sm text-muted-foreground">Emergency Contact</p>
-                    <p className="font-medium">
+                    <p className="text-sm text-neutral-400">Emergency Contact</p>
+                    <p className="font-medium text-white">
                       {patientData.emergency_contact.name} - {patientData.emergency_contact.phone}
                     </p>
                   </div>

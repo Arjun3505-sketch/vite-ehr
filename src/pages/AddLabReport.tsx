@@ -43,8 +43,10 @@ const AddLabReport = () => {
 
   // Handle AI-extracted data from Gemini
   const handleDataExtracted = (extractedData: any, file?: File) => {
-    console.log("AI Extracted Data:", extractedData);
-    console.log("Selected File:", file?.name);
+    console.log("🔍 AI Extracted Data:", extractedData);
+    console.log("📄 Selected File:", file?.name);
+    console.log("📋 Expected fields: patientId, date, testType, remarks");
+    console.log("✅ Extracted fields:", Object.keys(extractedData));
 
     // Store the file for later upload
     if (file) {
@@ -53,11 +55,13 @@ const AddLabReport = () => {
 
     setFormData(prev => ({
       ...prev,
-      testType: extractedData.testType || prev.testType,
-      remarks: extractedData.remarks || prev.remarks,
       patientId: extractedData.patientId || prev.patientId,
       date: extractedData.date || prev.date,
+      testType: extractedData.testType || prev.testType,
+      remarks: extractedData.remarks || prev.remarks,
     }));
+    
+    console.log("💾 Form updated with extracted data");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,19 +151,19 @@ const AddLabReport = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" onClick={() => navigate("/doctor-dashboard")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Add Lab Report</h1>
+          <h1 className="text-3xl font-bold text-white">Add Lab Report</h1>
         </div>
 
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle>Upload Lab Report</CardTitle>
+            <CardTitle className="text-white">Upload Lab Report</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -172,55 +176,59 @@ const AddLabReport = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="patientId">Patient ID</Label>
+                  <Label htmlFor="patientId" className="text-neutral-200">Patient ID</Label>
                   <Input
                     id="patientId"
                     placeholder="Enter patient ID"
                     value={formData.patientId}
                     onChange={(e) => setFormData({...formData, patientId: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="date">Test Date</Label>
+                  <Label htmlFor="date" className="text-neutral-200">Test Date</Label>
                   <Input
                     id="date"
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="testType">Test Type</Label>
+                <Label htmlFor="testType" className="text-neutral-200">Test Type</Label>
                 <Input
                   id="testType"
                   placeholder="e.g., Blood Test - CBC, X-Ray, MRI, CT Scan"
                   value={formData.testType}
                   onChange={(e) => setFormData({...formData, testType: e.target.value})}
                   required
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
+                <Label htmlFor="tags" className="text-neutral-200">Tags</Label>
                 <Input
                   id="tags"
                   placeholder="e.g., CBC, Routine, Follow-up"
                   value={formData.tags}
                   onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="remarks">Remarks & Observations</Label>
+                <Label htmlFor="remarks" className="text-neutral-200">Remarks & Observations</Label>
                 <Textarea
                   id="remarks"
                   placeholder="Enter test results, observations, or additional notes..."
-                  className="min-h-[120px]"
+                  className="min-h-[120px] bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   value={formData.remarks}
                   onChange={(e) => setFormData({...formData, remarks: e.target.value})}
                 />
@@ -239,7 +247,7 @@ const AddLabReport = () => {
               )}
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={loading}>
                   <Upload className="w-4 h-4 mr-2" />
                   {loading ? "Uploading..." : selectedFile ? "Upload File & Save Report" : "Save Report"}
                 </Button>

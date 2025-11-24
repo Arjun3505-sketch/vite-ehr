@@ -129,11 +129,11 @@ const DoctorProfileSetup = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
+      <Card className="w-full max-w-2xl bg-slate-800/80 backdrop-blur-sm border-slate-700">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Complete Your Doctor Profile</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold text-white">Complete Your Doctor Profile</CardTitle>
+          <CardDescription className="text-neutral-300">
             Please provide your professional information and set a new password
           </CardDescription>
         </CardHeader>
@@ -141,19 +141,20 @@ const DoctorProfileSetup = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="name" className="text-neutral-200">Full Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 disabled={loading}
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dob">Date of Birth *</Label>
+                <Label htmlFor="dob" className="text-neutral-200">Date of Birth *</Label>
                 <Input
                   id="dob"
                   type="date"
@@ -161,6 +162,7 @@ const DoctorProfileSetup = () => {
                   onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
                   required
                   disabled={loading}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
@@ -185,7 +187,7 @@ const DoctorProfileSetup = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="specialization">Specialization *</Label>
+                <Label htmlFor="specialization" className="text-neutral-200">Specialization *</Label>
                 <Input
                   id="specialization"
                   value={formData.specialization}
@@ -193,47 +195,51 @@ const DoctorProfileSetup = () => {
                   required
                   disabled={loading}
                   placeholder="e.g., Cardiology"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="licenseNumber">License Number *</Label>
+                <Label htmlFor="licenseNumber" className="text-neutral-200">License Number *</Label>
                 <Input
                   id="licenseNumber"
                   value={formData.licenseNumber}
                   onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
                   required
                   disabled={loading}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address" className="text-neutral-200">Address</Label>
               <Textarea
                 id="address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 disabled={loading}
                 placeholder="Enter your address"
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone" className="text-neutral-200">Phone Number</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 disabled={loading}
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
               />
             </div>
 
-            <div className="space-y-4 pt-4 border-t">
-              <h3 className="text-lg font-semibold">Set New Password</h3>
+            <div className="space-y-4 pt-4 border-t border-slate-700">
+              <h3 className="text-lg font-semibold text-white">Set New Password</h3>
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password *</Label>
+                <Label htmlFor="newPassword" className="text-neutral-200">New Password *</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -242,11 +248,12 @@ const DoctorProfileSetup = () => {
                   required
                   disabled={loading}
                   placeholder="Minimum 6 characters"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+                <Label htmlFor="confirmPassword" className="text-neutral-200">Confirm New Password *</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -254,11 +261,12 @@ const DoctorProfileSetup = () => {
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   required
                   disabled={loading}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? "Setting up profile..." : "Complete Setup"}
             </Button>
           </form>

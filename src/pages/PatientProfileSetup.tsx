@@ -111,11 +111,11 @@ const PatientProfileSetup = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
+      <Card className="w-full max-w-2xl bg-slate-800/80 backdrop-blur-sm border-slate-700">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold text-white">Complete Your Profile</CardTitle>
+          <CardDescription className="text-neutral-300">
             Please provide your information to get started
           </CardDescription>
         </CardHeader>
@@ -123,19 +123,20 @@ const PatientProfileSetup = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="name" className="text-neutral-200">Full Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 disabled={loading}
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dob">Date of Birth *</Label>
+                <Label htmlFor="dob" className="text-neutral-200">Date of Birth *</Label>
                 <Input
                   id="dob"
                   type="date"
@@ -143,6 +144,7 @@ const PatientProfileSetup = () => {
                   onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
                   required
                   disabled={loading}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
@@ -166,25 +168,27 @@ const PatientProfileSetup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address" className="text-neutral-200">Address</Label>
               <Textarea
                 id="address"
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 disabled={loading}
                 placeholder="Enter your address"
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="text-neutral-200">Phone Number</Label>
                 <Input
                   id="phone"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   disabled={loading}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
@@ -213,32 +217,34 @@ const PatientProfileSetup = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Emergency Contact</h3>
+              <h3 className="text-lg font-semibold text-white">Emergency Contact</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="emergencyContactName">Contact Name</Label>
+                  <Label htmlFor="emergencyContactName" className="text-neutral-200">Contact Name</Label>
                   <Input
                     id="emergencyContactName"
                     value={formData.emergencyContactName}
                     onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
                     disabled={loading}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="emergencyContactPhone">Contact Phone</Label>
+                  <Label htmlFor="emergencyContactPhone" className="text-neutral-200">Contact Phone</Label>
                   <Input
                     id="emergencyContactPhone"
                     type="tel"
                     value={formData.emergencyContactPhone}
                     onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
                     disabled={loading}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? "Setting up profile..." : "Complete Setup"}
             </Button>
           </form>

@@ -261,14 +261,14 @@ const DoctorProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" onClick={() => navigate("/doctor-dashboard")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Doctor Profile</h1>
+          <h1 className="text-3xl font-bold text-white">Doctor Profile</h1>
         </div>
 
         <Tabs defaultValue="professional" className="space-y-6">
@@ -280,9 +280,9 @@ const DoctorProfile = () => {
 
           {/* Professional Information */}
           <TabsContent value="professional">
-            <Card>
+            <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <User className="w-5 h-5" />
                   Edit Professional Information
                 </CardTitle>
@@ -290,89 +290,98 @@ const DoctorProfile = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name" className="text-neutral-200">Full Name</Label>
                     <Input
                       id="name"
                       value={doctorInfo.name}
                       onChange={(e) => setDoctorInfo({...doctorInfo, name: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="text-neutral-200">Email</Label>
                     <Input
                       id="email"
                       type="email"
                       value={doctorInfo.email}
                       onChange={(e) => setDoctorInfo({...doctorInfo, email: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone" className="text-neutral-200">Phone</Label>
                     <Input
                       id="phone"
                       value={doctorInfo.phone}
                       onChange={(e) => setDoctorInfo({...doctorInfo, phone: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="specialization">Specialization</Label>
+                    <Label htmlFor="specialization" className="text-neutral-200">Specialization</Label>
                     <Input
                       id="specialization"
                       value={doctorInfo.specialization}
                       onChange={(e) => setDoctorInfo({...doctorInfo, specialization: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="license">License Number</Label>
+                    <Label htmlFor="license" className="text-neutral-200">License Number</Label>
                     <Input
                       id="license"
                       value={doctorInfo.licenseNumber}
                       onChange={(e) => setDoctorInfo({...doctorInfo, licenseNumber: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="experience">Experience</Label>
+                    <Label htmlFor="experience" className="text-neutral-200">Experience</Label>
                     <Input
                       id="experience"
                       value={doctorInfo.experience}
                       onChange={(e) => setDoctorInfo({...doctorInfo, experience: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="hospital">Hospital/Clinic</Label>
+                    <Label htmlFor="hospital" className="text-neutral-200">Hospital/Clinic</Label>
                     <Input
                       id="hospital"
                       value={doctorInfo.hospital}
                       onChange={(e) => setDoctorInfo({...doctorInfo, hospital: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
+                    <Label htmlFor="department" className="text-neutral-200">Department</Label>
                     <Input
                       id="department"
                       value={doctorInfo.department}
                       onChange={(e) => setDoctorInfo({...doctorInfo, department: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="bio">Bio</Label>
+                    <Label htmlFor="bio" className="text-neutral-200">Bio</Label>
                     <Textarea
                       id="bio"
                       value={doctorInfo.bio}
                       onChange={(e) => setDoctorInfo({...doctorInfo, bio: e.target.value})}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                     />
                   </div>
                 </div>
 
-                <Button onClick={handleSaveProfessionalInfo} className="mt-4">
+                <Button onClick={handleSaveProfessionalInfo} className="mt-4 bg-blue-600 hover:bg-blue-700">
                   <Save className="w-4 h-4 mr-2" />
                   Save Changes
                 </Button>
@@ -382,42 +391,45 @@ const DoctorProfile = () => {
 
           {/* Security & Password */}
           <TabsContent value="security">
-            <Card>
+            <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <Lock className="w-5 h-5" />
                   Change Password
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="currentPassword" className="text-neutral-200">Current Password</Label>
                   <Input 
                     id="currentPassword" 
                     type="password"
                     value={passwordData.currentPassword}
                     onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword" className="text-neutral-200">New Password</Label>
                   <Input 
                     id="newPassword" 
                     type="password"
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-neutral-200">Confirm New Password</Label>
                   <Input 
                     id="confirmPassword" 
                     type="password"
                     value={passwordData.confirmPassword}
                     onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
-                <Button onClick={handleChangePassword}>
+                <Button onClick={handleChangePassword} className="bg-blue-600 hover:bg-blue-700">
                   Update Password
                 </Button>
               </CardContent>
@@ -427,34 +439,34 @@ const DoctorProfile = () => {
 
           {/* Patient Management */}
           <TabsContent value="patients">
-            <Card>
+            <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <Users className="w-5 h-5" />
                   My Patients
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground mb-4">Patients you have treated</p>
-                <Button onClick={fetchMyPatients} className="mb-4" disabled={loadingPatients}>
+                <p className="text-neutral-300 mb-4">Patients you have treated</p>
+                <Button onClick={fetchMyPatients} className="mb-4 bg-blue-600 hover:bg-blue-700" disabled={loadingPatients}>
                   {loadingPatients ? "Loading..." : "Load Patients"}
                 </Button>
                 
                 {patients.length === 0 && !loadingPatients ? (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-8 text-neutral-400">
                     No patients found. Add diagnoses, prescriptions, surgeries, or lab reports to see patients here.
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {patients.map((patient) => (
-                      <Card key={patient.id}>
+                      <Card key={patient.id} className="border-slate-600 bg-slate-700/30">
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h3 className="font-semibold text-lg">{patient.name}</h3>
-                              <p className="text-sm text-muted-foreground">ID: {patient.id}</p>
-                              <p className="text-sm text-muted-foreground">Email: {patient.email || 'N/A'}</p>
-                              <p className="text-sm text-muted-foreground">Phone: {patient.phone || 'N/A'}</p>
+                              <h3 className="font-semibold text-lg text-white">{patient.name}</h3>
+                              <p className="text-sm text-neutral-400">ID: {patient.id}</p>
+                              <p className="text-sm text-neutral-400">Email: {patient.email || 'N/A'}</p>
+                              <p className="text-sm text-neutral-400">Phone: {patient.phone || 'N/A'}</p>
                             </div>
                             <Button 
                               variant="outline" 

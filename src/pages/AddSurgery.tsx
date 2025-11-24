@@ -31,8 +31,10 @@ const AddSurgery = () => {
 
   // Handle AI-extracted data from Gemini
   const handleDataExtracted = (extractedData: any, file?: File) => {
-    console.log("AI Extracted Data:", extractedData);
-    console.log("Selected File:", file?.name);
+    console.log("🔍 AI Extracted Data:", extractedData);
+    console.log("📄 Selected File:", file?.name);
+    console.log("📋 Expected fields: patientId, date, procedure, outcome, complications, icdPcsCode, remarks");
+    console.log("✅ Extracted fields:", Object.keys(extractedData));
 
     // Store the file for later upload
     if (file) {
@@ -41,14 +43,16 @@ const AddSurgery = () => {
 
     setFormData(prev => ({
       ...prev,
+      patientId: extractedData.patientId || prev.patientId,
+      date: extractedData.date || prev.date,
       procedure: extractedData.procedure || prev.procedure,
       outcome: extractedData.outcome || prev.outcome,
       complications: extractedData.complications || prev.complications,
       icdPcsCode: extractedData.icdPcsCode || prev.icdPcsCode,
       remarks: extractedData.remarks || prev.remarks,
-      patientId: extractedData.patientId || prev.patientId,
-      date: extractedData.date || prev.date,
     }));
+    
+    console.log("💾 Form updated with extracted data");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,7 +155,7 @@ const AddSurgery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -160,15 +164,15 @@ const AddSurgery = () => {
             Back to Dashboard
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Add Surgery Record</h1>
-            <p className="text-muted-foreground">Record a new surgical procedure</p>
+            <h1 className="text-3xl font-bold text-white">Add Surgery Record</h1>
+            <p className="text-neutral-300">Record a new surgical procedure</p>
           </div>
         </div>
 
         {/* Form */}
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Scissors className="w-5 h-5" />
               Surgery Information
             </CardTitle>
@@ -184,84 +188,91 @@ const AddSurgery = () => {
 
               {/* Patient Selection */}
               <div className="space-y-2">
-                <Label htmlFor="patientId">Patient ID *</Label>
+                <Label htmlFor="patientId" className="text-neutral-200">Patient ID *</Label>
                 <Input
                   id="patientId"
                   placeholder="Enter patient ID"
                   value={formData.patientId}
                   onChange={(e) => setFormData({...formData, patientId: e.target.value})}
                   required
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               {/* Date */}
               <div className="space-y-2">
-                <Label htmlFor="date">Surgery Date *</Label>
+                <Label htmlFor="date" className="text-neutral-200">Surgery Date *</Label>
                 <Input
                   id="date"
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({...formData, date: e.target.value})}
                   required
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               {/* Procedure */}
               <div className="space-y-2">
-                <Label htmlFor="procedure">Procedure *</Label>
+                <Label htmlFor="procedure" className="text-neutral-200">Procedure *</Label>
                 <Input
                   id="procedure"
                   placeholder="e.g., Appendectomy, Coronary Artery Bypass"
                   value={formData.procedure}
                   onChange={(e) => setFormData({...formData, procedure: e.target.value})}
                   required
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               {/* Outcome */}
               <div className="space-y-2">
-                <Label htmlFor="outcome">Outcome *</Label>
+                <Label htmlFor="outcome" className="text-neutral-200">Outcome *</Label>
                 <Input
                   id="outcome"
                   placeholder="e.g., Successful, Complication, Failed"
                   value={formData.outcome}
                   onChange={(e) => setFormData({...formData, outcome: e.target.value})}
                   required
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               {/* Complications */}
               <div className="space-y-2">
-                <Label htmlFor="complications">Complications</Label>
+                <Label htmlFor="complications" className="text-neutral-200">Complications</Label>
                 <Textarea
                   id="complications"
                   placeholder="Describe any complications that occurred during or after surgery"
                   value={formData.complications}
                   onChange={(e) => setFormData({...formData, complications: e.target.value})}
                   rows={3}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               {/* ICD-PCS Code */}
               <div className="space-y-2">
-                <Label htmlFor="icdPcsCode">ICD-PCS Code</Label>
+                <Label htmlFor="icdPcsCode" className="text-neutral-200">ICD-PCS Code</Label>
                 <Input
                   id="icdPcsCode"
                   placeholder="e.g., 0DTJ4ZZ"
                   value={formData.icdPcsCode}
                   onChange={(e) => setFormData({...formData, icdPcsCode: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
               {/* Remarks */}
               <div className="space-y-2">
-                <Label htmlFor="remarks">Remarks</Label>
+                <Label htmlFor="remarks" className="text-neutral-200">Remarks</Label>
                 <Textarea
                   id="remarks"
                   placeholder="Additional notes about the surgery"
                   value={formData.remarks}
                   onChange={(e) => setFormData({...formData, remarks: e.target.value})}
                   rows={4}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
 
@@ -279,7 +290,7 @@ const AddSurgery = () => {
 
               {/* Submit Button */}
               <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={loading} className="flex-1">
+                <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700">
                   <Save className="w-4 h-4 mr-2" />
                   {loading ? "Adding Surgery..." : selectedFile ? "Add Surgery & Upload File" : "Add Surgery Record"}
                 </Button>

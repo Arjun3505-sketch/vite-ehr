@@ -90,12 +90,12 @@ const PatientDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Patient Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {currentPatient.name || 'Patient'}</p>
+          <h1 className="text-3xl font-bold text-white">Patient Dashboard</h1>
+          <p className="text-neutral-300">Welcome back, {currentPatient.name || 'Patient'}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/patient-profile")}>
@@ -111,96 +111,96 @@ const PatientDashboard = () => {
 
       {/* Personal Health Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <User className="w-5 h-5" />
               Personal Information
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+              <div className="text-center py-4 text-neutral-400">Loading...</div>
             ) : (
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Name:</span>
-                  <span className="font-medium">{currentPatient.name || 'N/A'}</span>
+                  <span className="text-neutral-400">Name:</span>
+                  <span className="font-medium text-white">{currentPatient.name || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Blood Group:</span>
+                  <span className="text-neutral-400">Blood Group:</span>
                   <Badge variant="outline">{currentPatient.blood_group || 'N/A'}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="font-medium text-sm">{currentPatient.email || 'N/A'}</span>
+                  <span className="text-neutral-400">Email:</span>
+                  <span className="font-medium text-sm text-white">{currentPatient.email || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phone:</span>
-                  <span className="font-medium text-sm">{currentPatient.phone || 'N/A'}</span>
+                  <span className="text-neutral-400">Phone:</span>
+                  <span className="font-medium text-sm text-white">{currentPatient.phone || 'N/A'}</span>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Heart className="w-5 h-5" />
               Latest Diagnosis
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+              <div className="text-center py-4 text-neutral-400">Loading...</div>
             ) : latestDiagnosis.id ? (
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Date:</span>
-                  <span className="font-medium">{formatDate(latestDiagnosis.date)}</span>
+                  <span className="text-neutral-400">Date:</span>
+                  <span className="font-medium text-white">{formatDate(latestDiagnosis.date)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Condition:</span>
+                  <span className="text-neutral-400">Condition:</span>
                   <Badge variant="secondary">{latestDiagnosis.condition}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Severity:</span>
+                  <span className="text-neutral-400">Severity:</span>
                   <Badge variant={latestDiagnosis.severity === 'severe' ? 'destructive' : 'outline'}>
                     {latestDiagnosis.severity || 'Not specified'}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-neutral-400 mt-2">
                   {latestDiagnosis.clinical_notes || 'No notes available'}
                 </p>
               </div>
             ) : (
-              <div className="text-center py-4 text-muted-foreground">No diagnoses found</div>
+              <div className="text-center py-4 text-neutral-400">No diagnoses found</div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Pill className="w-5 h-5" />
               Recent Prescriptions ({prescriptions.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+              <div className="text-center py-4 text-neutral-400">Loading...</div>
             ) : prescriptions.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">No prescriptions found</div>
+              <div className="text-center py-4 text-neutral-400">No prescriptions found</div>
             ) : (
               <div className="space-y-3">
                 {prescriptions.slice(0, 3).map((prescription) => (
-                  <div key={prescription.id} className="p-3 border rounded-lg">
-                    <p className="font-medium">Prescription</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div key={prescription.id} className="p-3 border border-slate-600 rounded-lg bg-slate-700/30">
+                    <p className="font-medium text-white">Prescription</p>
+                    <p className="text-sm text-neutral-400">
                       {prescription.instructions || 'No instructions'}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-neutral-400">
                       Valid until: {prescription.valid_until ? formatDate(prescription.valid_until) : 'No expiry'}
                     </p>
                   </div>
@@ -213,25 +213,25 @@ const PatientDashboard = () => {
 
       {/* Lab Reports and Vaccinations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <FileText className="w-5 h-5" />
               Recent Lab Reports ({labReports.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+              <div className="text-center py-4 text-neutral-400">Loading...</div>
             ) : labReports.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">No lab reports found</div>
+              <div className="text-center py-4 text-neutral-400">No lab reports found</div>
             ) : (
               <div className="space-y-3">
                 {labReports.map((report) => (
-                  <div key={report.id} className="flex justify-between items-center p-3 border rounded-lg">
+                  <div key={report.id} className="flex justify-between items-center p-3 border border-slate-600 rounded-lg bg-slate-700/30">
                     <div>
-                      <p className="font-medium">{report.report_type}</p>
-                      <p className="text-sm text-muted-foreground">{formatDate(report.date)}</p>
+                      <p className="font-medium text-white">{report.report_type}</p>
+                      <p className="text-sm text-neutral-400">{formatDate(report.date)}</p>
                     </div>
                     <Badge variant={report.tags?.urgent ? "destructive" : "secondary"}>
                       {report.tags?.urgent ? "Urgent" : "Normal"}
@@ -243,32 +243,32 @@ const PatientDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Calendar className="w-5 h-5" />
               Recent Vaccinations ({vaccinations.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4 text-muted-foreground">Loading...</div>
+              <div className="text-center py-4 text-neutral-400">Loading...</div>
             ) : vaccinations.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">No vaccinations found</div>
+              <div className="text-center py-4 text-neutral-400">No vaccinations found</div>
             ) : (
               <div className="space-y-3">
                 {vaccinations.map((vaccination) => (
-                  <div key={vaccination.id} className="flex justify-between items-center p-3 border rounded-lg">
+                  <div key={vaccination.id} className="flex justify-between items-center p-3 border border-slate-600 rounded-lg bg-slate-700/30">
                     <div>
-                      <p className="font-medium">{vaccination.vaccine_name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-white">{vaccination.vaccine_name}</p>
+                      <p className="text-sm text-neutral-400">
                         Dose {vaccination.dose_number}/{vaccination.total_doses}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium">{formatDate(vaccination.administered_date)}</p>
+                      <p className="text-sm font-medium text-white">{formatDate(vaccination.administered_date)}</p>
                       {vaccination.next_dose_due && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-neutral-400">
                           Next: {formatDate(vaccination.next_dose_due)}
                         </p>
                       )}

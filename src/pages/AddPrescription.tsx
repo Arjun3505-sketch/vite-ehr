@@ -125,86 +125,91 @@ const AddPrescription = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" onClick={() => navigate("/doctor-dashboard")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">New Prescription</h1>
+          <h1 className="text-3xl font-bold text-white">New Prescription</h1>
         </div>
 
         <div className="space-y-6">
           {/* Basic Information */}
-          <Card>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
             <CardHeader>
-              <CardTitle>Prescription Details</CardTitle>
+              <CardTitle className="text-white">Prescription Details</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="patientId">Patient ID</Label>
+                  <Label htmlFor="patientId" className="text-neutral-200">Patient ID</Label>
                   <Input
                     id="patientId"
                     placeholder="Enter patient ID"
                     value={formData.patientId}
                     onChange={(e) => setFormData({...formData, patientId: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
+                  <Label htmlFor="startDate" className="text-neutral-200">Start Date</Label>
                   <Input
                     id="startDate"
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setFormData({...formData, startDate: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expiryDate">Expiry Date</Label>
+                  <Label htmlFor="expiryDate" className="text-neutral-200">Expiry Date</Label>
                   <Input
                     id="expiryDate"
                     type="date"
                     value={formData.expiryDate}
                     onChange={(e) => setFormData({...formData, expiryDate: e.target.value})}
                     required
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tags">Tags</Label>
+                  <Label htmlFor="tags" className="text-neutral-200">Tags</Label>
                   <Input
                     id="tags"
                     placeholder="e.g., Pain Relief, Antibiotic"
                     value={formData.tags}
                     onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                   />
                 </div>
               </div>
 
               <div className="mt-4 space-y-2">
-                <Label htmlFor="remarks">Remarks</Label>
+                <Label htmlFor="remarks" className="text-neutral-200">Remarks</Label>
                 <Textarea
                   id="remarks"
                   placeholder="Additional notes or special instructions..."
                   value={formData.remarks}
                   onChange={(e) => setFormData({...formData, remarks: e.target.value})}
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Medications */}
-          <Card>
+          <Card className="bg-slate-800/80 backdrop-blur-sm border-slate-700">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Medications</CardTitle>
-                <Button onClick={addMedication} size="sm">
+                <CardTitle className="text-white">Medications</CardTitle>
+                <Button onClick={addMedication} size="sm" className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Medication
                 </Button>
@@ -213,9 +218,9 @@ const AddPrescription = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {medications.map((medication, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-4">
+                  <div key={index} className="border-slate-600 bg-slate-700/30 border rounded-lg p-4 space-y-4">
                     <div className="flex justify-between items-center">
-                      <h4 className="font-medium">Medication {index + 1}</h4>
+                      <h4 className="font-medium text-white">Medication {index + 1}</h4>
                       {medications.length > 1 && (
                         <Button
                           type="button"
@@ -230,22 +235,24 @@ const AddPrescription = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>Medication Name</Label>
+                        <Label className="text-neutral-200">Medication Name</Label>
                         <Input
                           placeholder="e.g., Amoxicillin"
                           value={medication.name}
                           onChange={(e) => updateMedication(index, "name", e.target.value)}
                           required
+                          className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Dosage</Label>
+                        <Label className="text-neutral-200">Dosage</Label>
                         <Input
                           placeholder="e.g., 500mg"
                           value={medication.dosage}
                           onChange={(e) => updateMedication(index, "dosage", e.target.value)}
                           required
+                          className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                         />
                       </div>
 
@@ -266,21 +273,23 @@ const AddPrescription = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Duration</Label>
+                        <Label className="text-neutral-200">Duration</Label>
                         <Input
                           placeholder="e.g., 7 days"
                           value={medication.duration}
                           onChange={(e) => updateMedication(index, "duration", e.target.value)}
                           required
+                          className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                         />
                       </div>
 
                       <div className="space-y-2 md:col-span-2">
-                        <Label>Special Instructions</Label>
+                        <Label className="text-neutral-200">Special Instructions</Label>
                         <Input
                           placeholder="e.g., Take with food"
                           value={medication.instructions}
                           onChange={(e) => updateMedication(index, "instructions", e.target.value)}
+                          className="bg-slate-700/50 border-slate-600 text-white placeholder:text-neutral-400"
                         />
                       </div>
                     </div>
@@ -288,7 +297,7 @@ const AddPrescription = () => {
                 ))}
 
                 <div className="flex gap-4 pt-6">
-                  <Button type="submit" className="flex-1" disabled={loading}>
+                  <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={loading}>
                     <Save className="w-4 h-4 mr-2" />
                     {loading ? "Saving..." : "Save Prescription"}
                   </Button>

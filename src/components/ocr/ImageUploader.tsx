@@ -49,6 +49,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
   "patientId": "patient ID or medical record number",
+  "date": "date of diagnosis in YYYY-MM-DD format",
   "diagnosis": "primary diagnosis or condition",
   "details": "detailed clinical notes including symptoms, treatment plan, medications, observations",
   "severity": "mild|moderate|severe|critical"
@@ -60,24 +61,29 @@ If any field cannot be determined, use an empty string. Return ONLY the JSON obj
 Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
   "patientId": "patient ID or medical record number",
-  "medication": "medication name",
-  "dosage": "dosage amount",
-  "frequency": "how often to take",
-  "duration": "duration of treatment",
-  "instructions": "special instructions or notes"
+  "startDate": "prescription start date in YYYY-MM-DD format",
+  "expiryDate": "prescription expiry date in YYYY-MM-DD format",
+  "remarks": "general prescription notes or instructions",
+  "medications": [
+    {
+      "name": "medication name",
+      "dosage": "dosage amount",
+      "frequency": "how often to take",
+      "duration": "duration of treatment",
+      "instructions": "special instructions for this medication"
+    }
+  ]
 }
-If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
+If multiple medications are listed, include them all in the medications array. If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
       
       case 'lab-report':
         return `You are a medical AI assistant. Analyze this lab report and extract test information.
 Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
   "patientId": "patient ID or medical record number",
-  "testName": "name of the test",
-  "result": "test result value",
-  "units": "measurement units",
-  "referenceRange": "normal reference range",
-  "notes": "any additional notes or observations"
+  "date": "date of the test in YYYY-MM-DD format",
+  "testType": "type or name of the test performed",
+  "remarks": "test results, findings, observations, and any additional notes"
 }
 If any field cannot be determined, use an empty string. Return ONLY the JSON object, nothing else.`;
       
@@ -86,6 +92,7 @@ If any field cannot be determined, use an empty string. Return ONLY the JSON obj
 Extract the following fields and return ONLY a valid JSON object (no markdown, no code blocks, no explanations):
 {
   "patientId": "patient ID or medical record number",
+  "date": "date of surgery in YYYY-MM-DD format",
   "procedure": "name of the surgical procedure",
   "outcome": "outcome or result of surgery",
   "complications": "any complications that occurred",
