@@ -136,13 +136,13 @@ const Diagnoses = () => {
     
     switch (severity.toLowerCase()) {
       case 'mild':
-        return <Badge variant="secondary">Mild</Badge>;
+        return <Badge variant="secondary" className="text-white">Mild</Badge>;
       case 'moderate':
-        return <Badge variant="default">Moderate</Badge>;
+        return <Badge variant="default" className="text-white">Moderate</Badge>;
       case 'severe':
-        return <Badge variant="destructive">Severe</Badge>;
+        return <Badge variant="destructive" className="text-white">Severe</Badge>;
       default:
-        return <Badge variant="outline">{severity}</Badge>;
+        return <Badge variant="outline" className="text-white">{severity}</Badge>;
     }
   };
 

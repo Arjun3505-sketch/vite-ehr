@@ -218,7 +218,7 @@ const DoctorDashboard = () => {
                       <p className="font-medium text-white">{diagnosis.condition}</p>
                       <p className="text-sm text-neutral-400">{diagnosis.patients?.name}</p>
                     </div>
-                    <Badge variant={diagnosis.severity === 'severe' ? 'destructive' : 'secondary'}>
+                    <Badge variant={diagnosis.severity === 'severe' ? 'destructive' : 'secondary'} className="text-white">
                       {diagnosis.severity || 'Normal'}
                     </Badge>
                   </div>

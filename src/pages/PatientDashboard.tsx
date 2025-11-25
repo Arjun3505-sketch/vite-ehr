@@ -129,7 +129,7 @@ const PatientDashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400">Blood Group:</span>
-                  <Badge variant="outline">{currentPatient.blood_group || 'N/A'}</Badge>
+                  <Badge variant="outline" className="text-white">{currentPatient.blood_group || 'N/A'}</Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400">Email:</span>
@@ -166,7 +166,7 @@ const PatientDashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400">Severity:</span>
-                  <Badge variant={latestDiagnosis.severity === 'severe' ? 'destructive' : 'outline'}>
+                  <Badge variant={latestDiagnosis.severity === 'severe' ? 'destructive' : 'outline'} className="text-white">
                     {latestDiagnosis.severity || 'Not specified'}
                   </Badge>
                 </div>

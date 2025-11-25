@@ -157,7 +157,7 @@ const FindPatient = () => {
                 </div>
                 <div>
                   <p className="text-sm text-neutral-400">Blood Group</p>
-                  <Badge variant="outline">{patientData.blood_group || 'N/A'}</Badge>
+                  <Badge variant="outline" className="text-white">{patientData.blood_group || 'N/A'}</Badge>
                 </div>
                 <div>
                   <p className="text-sm text-neutral-400">Gender</p>
