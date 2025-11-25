@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 reports/
+src/test
+
+test_conditions.md
+vitest.config.ts
