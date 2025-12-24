@@ -27,3 +27,5 @@ src/test
 
 test_conditions.md
 vitest.config.ts
+
+bun.lockb
